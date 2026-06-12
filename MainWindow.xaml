@@ -39,10 +39,7 @@
                     ToolTip="설정"
                     Foreground="#FFFFFFFF"
                     FontSize="15">
-                <Image Source="Assets/settings.png"
-                       Width="18"
-                       Height="18"
-                       Stretch="Uniform" />
+                <Image Source="Assets/settings.png" Width="18" Height="18" Stretch="Uniform" />
             </Button>
         </Grid>
     </Border>
