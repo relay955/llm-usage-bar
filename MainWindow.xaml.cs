@@ -6,12 +6,6 @@ using System.Windows.Threading;
 namespace LLMUsageBar;
 
 public partial class MainWindow : Window {
-    static readonly IntPtr HwndTopmost = new(-1);
-    const uint SwpNoSize = 0x0001;
-    const uint SwpNoMove = 0x0002;
-    const uint SwpNoActivate = 0x0010;
-    const uint SwpShowWindow = 0x0040;
-
     const double TargetWidth = 230;
     const double EdgePadding = 300;
     const double DefaultTaskbarHeight = 40;
