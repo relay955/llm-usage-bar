@@ -13,15 +13,14 @@
         AllowsTransparency="True"
         Background="Transparent"
         Topmost="True"
+        d:DataContext="{d:DesignInstance local:MainWindow}"
         ShowInTaskbar="False">
-    <Window.DataContext>
-        <Binding Source="{RelativeSource Self}"/>
-    </Window.DataContext>
+    
     <Border BorderBrush="#FFFF3B30"
             BorderThickness="1"
             Background="#CC111111">
         <Grid>
-            <TextBlock Text="test"
+            <TextBlock Text="{Binding CreditText}"
                        Foreground="#FFFFFFFF"
                        FontSize="14"
                        FontWeight="SemiBold"
