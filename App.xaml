@@ -8,6 +8,8 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/ButtonStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            
+            <FontFamily x:Key="NotoSansKr">applicaton:,,,/Assets/#Noto Sans KR</FontFamily>
 
             <SolidColorBrush x:Key="ControlSurfaceBrush" Color="#FF2B2B2B" />
             <SolidColorBrush x:Key="ControlSurfaceHoverBrush" Color="#FF343434" />
@@ -132,6 +134,7 @@
                 <Setter Property="BorderThickness" Value="1" />
                 <Setter Property="Cursor" Value="Hand" />
                 <Setter Property="FontSize" Value="13" />
+                <Setter Property="FontFamily" Value="{StaticResource NotoSansKr}" />
                 <Setter Property="SnapsToDevicePixels" Value="True" />
                 <Setter Property="Template">
                     <Setter.Value>
@@ -177,6 +180,7 @@
                 <Setter Property="BorderThickness" Value="1" />
                 <Setter Property="CaretBrush" Value="{StaticResource ControlTextBrush}" />
                 <Setter Property="SelectionBrush" Value="#664CC2FF" />
+                <Setter Property="FontFamily" Value="{StaticResource NotoSansKr}" />
                 <Setter Property="FontSize" Value="13" />
                 <Setter Property="SnapsToDevicePixels" Value="True" />
                 <Setter Property="Template">
