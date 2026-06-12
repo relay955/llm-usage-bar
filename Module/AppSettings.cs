@@ -11,11 +11,15 @@ namespace LLMUsageBar.Module;
 public sealed class AppSettings:INotifyPropertyChanged {
     public event PropertyChangedEventHandler? PropertyChanged;
     public int RefreshIntervalMinutes { get; set; }
+    public bool UseOpenRouter { get; set; }
+    public string OpenRouterApiKey { get; set; } = "";
 }
 
 public static class AppSettingsStore {
     private const string SettingsFileName = "settings.toml";
     private const string RefreshIntervalKey = "refresh_interval_minutes";
+    private const string UseOpenRouterKey = "useOpenRouter";
+    private const string OpenRouterApiKeyKey = "OpenRouterApiKey";
 
     public static string SettingsFilePath {
         get {
@@ -33,7 +37,9 @@ public static class AppSettingsStore {
         TomlTable table = TomlSerializer.Deserialize<TomlTable>(content) ?? new TomlTable();
 
         return new AppSettings {
-            RefreshIntervalMinutes = ReadPositiveInt(table, RefreshIntervalKey, 10)
+            RefreshIntervalMinutes = ReadPositiveInt(table, RefreshIntervalKey, 10),
+            UseOpenRouter = ReadBool(table, UseOpenRouterKey, false),
+            OpenRouterApiKey = ReadString(table, OpenRouterApiKeyKey, "")
         };
     }
 
@@ -41,7 +47,9 @@ public static class AppSettingsStore {
         Directory.CreateDirectory(Path.GetDirectoryName(SettingsFilePath)!);
 
         var table = new TomlTable {
-            [RefreshIntervalKey] = Math.Max(1, settings.RefreshIntervalMinutes)
+            [RefreshIntervalKey] = Math.Max(1, settings.RefreshIntervalMinutes),
+            [UseOpenRouterKey] = settings.UseOpenRouter,
+            [OpenRouterApiKeyKey] = settings.OpenRouterApiKey
         };
 
         File.WriteAllText(SettingsFilePath, TomlSerializer.Serialize(table), Encoding.UTF8);
@@ -59,5 +67,21 @@ public static class AppSettingsStore {
         };
 
         return result > 0 ? result : defaultValue;
+    }
+
+    private static bool ReadBool(TomlTable table, string key, bool defaultValue) {
+        if (!table.TryGetValue(key, out object? value)) {
+            return defaultValue;
+        }
+
+        return value is bool boolValue ? boolValue : defaultValue;
+    }
+
+    private static string ReadString(TomlTable table, string key, string defaultValue) {
+        if (!table.TryGetValue(key, out object? value)) {
+            return defaultValue;
+        }
+
+        return value is string stringValue ? stringValue : defaultValue;
     }
 }
