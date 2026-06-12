@@ -13,27 +13,86 @@
         Background="#FF1E1E1E">
     <Window.Resources>
         <local:SettingsVm x:Key="Vm" />
+        <Style x:Key="SettingsNavListBoxStyle" TargetType="{x:Type ListBox}">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="#FFE8E8E8" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
+        </Style>
+        <Style x:Key="SettingsNavListBoxItemStyle" TargetType="{x:Type ListBoxItem}">
+            <Setter Property="Height" Value="38" />
+            <Setter Property="Margin" Value="0,2" />
+            <Setter Property="Padding" Value="14,0" />
+            <Setter Property="Foreground" Value="#FFBDBDBD" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                        <Border x:Name="ItemBackground"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="7"
+                                SnapsToDevicePixels="True">
+                            <Grid>
+                                <Border x:Name="SelectionBar"
+                                        Width="3"
+                                        Height="18"
+                                        Margin="6,0,0,0"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Center"
+                                        Background="#FF4CC2FF"
+                                        CornerRadius="2"
+                                        Opacity="0" />
+                                <ContentPresenter Margin="{TemplateBinding Padding}"
+                                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ItemBackground" Property="Background" Value="#FF2A2A2A" />
+                                <Setter Property="Foreground" Value="#FFF2F2F2" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBackground" Property="Background" Value="#FF26333A" />
+                                <Setter TargetName="SelectionBar" Property="Opacity" Value="1" />
+                                <Setter Property="Foreground" Value="#FFFFFFFF" />
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="#FF777777" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
     <Window.DataContext>
         <Binding Source="{StaticResource Vm}" />
     </Window.DataContext>
 
-    <DockPanel Margin="18">
+    <DockPanel>
         <Border DockPanel.Dock="Left"
-                Width="132"
+                Width="146"
                 Margin="0,0,18,0"
-                BorderBrush="#FF333333"
-                BorderThickness="0,0,1,0">
+                Padding="8"
+                Background="#FF242424"
+                BorderBrush="#FF3A3A3A"
+                BorderThickness="1">
             <ListBox SelectedIndex="0"
-                     Background="Transparent"
-                     BorderThickness="0"
-                     Foreground="#FFE8E8E8">
-                <ListBoxItem Content="General" Padding="10,8" />
-                <ListBoxItem Content="Openrouter" Padding="10,8" />
+                     Style="{StaticResource SettingsNavListBoxStyle}"
+                     ItemContainerStyle="{StaticResource SettingsNavListBoxItemStyle}">
+                <ListBoxItem Content="General" />
+                <ListBoxItem Content="Openrouter" />
             </ListBox>
         </Border>
 
-        <Grid>
+        <Grid Margin="12">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
