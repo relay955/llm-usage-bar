@@ -1,9 +1,10 @@
 using System.Windows;
+using LLMUsageBar.ui;
 
 namespace LLMUsageBar;
 
 public partial class MainWindow : Window {
-    private const double TargetWidth = 200;
+    private const double TargetWidth = 230;
     private const double EdgePadding = 300;
     private const double DefaultTaskbarHeight = 40;
 
@@ -62,5 +63,13 @@ public partial class MainWindow : Window {
 
     private static double GetTaskbarLikeHeight(double taskbarHeight) {
         return Math.Clamp(taskbarHeight, 32, 80);
+    }
+
+    private void OpenSettingsButton_Click(object sender, RoutedEventArgs e) {
+        var settingsWindow = new Settings {
+            Owner = this
+        };
+
+        settingsWindow.ShowDialog();
     }
 }
