@@ -1,4 +1,4 @@
-﻿namespace LLMUsageBar.module;
+﻿namespace LLMUsageBar.Provider;
 
 public interface ILlmProvider {
     Task<Quota> GetCurrentQuotaAsync();

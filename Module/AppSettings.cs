@@ -1,10 +1,16 @@
 using System.IO;
 using System.Text;
-using LLMUsageBar.Models;
+
 using Tomlyn;
 using Tomlyn.Model;
 
-namespace LLMUsageBar.Services;
+namespace LLMUsageBar.Module;
+
+public sealed class AppSettings {
+    public const int DefaultRefreshIntervalMinutes = 10;
+
+    public int RefreshIntervalMinutes { get; set; } = DefaultRefreshIntervalMinutes;
+}
 
 public static class AppSettingsStore {
     private const string SettingsFileName = "settings.toml";

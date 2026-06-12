@@ -1,6 +1,6 @@
 using System.Windows;
-using LLMUsageBar.Models;
-using LLMUsageBar.Services;
+
+using LLMUsageBar.Module;
 
 namespace LLMUsageBar;
 
