@@ -19,31 +19,16 @@ public class MainWindowVm:INotifyPropertyChanged {
     
     public MainWindowVm() {
         OpenSettingsCommand = new Command(async void (owner) => {
-            try {
-                await OpenSettingsAsync(owner as Window);
-            } catch (Exception e) {
-                
-            }
+            await OpenSettingsAsync(owner as Window);
         });
     }
-    public void Start() {
+    public void StartTimer() {
         ConfigureRefreshTimer();
         _ = RefreshCreditAsync();
     }
 
-    public void Stop() => this._refreshTimer.Stop();
-
-    async Task OpenSettingsAsync(Window? owner) {
-        var settingsWindow = new Settings {
-            Owner = owner
-        };
-
-        if (settingsWindow.ShowDialog() == true) {
-            ConfigureRefreshTimer();
-            await RefreshCreditAsync();
-        }
-    }
-
+    public void StopTimer() => this._refreshTimer.Stop();
+    
     void ConfigureRefreshTimer() {
         this._refreshTimer.Stop();
         this._refreshTimer.Interval = TimeSpan.FromMinutes(Math.Max(1, App.Settings.RefreshIntervalMinutes));
@@ -55,6 +40,12 @@ public class MainWindowVm:INotifyPropertyChanged {
     async void RefreshTimer_Tick(object? sender, EventArgs e) {
         await RefreshCreditAsync();
     }
+    
+    async Task OpenSettingsAsync(Window? owner) {
+        var settingsWindow = new Settings { Owner = owner };
+        settingsWindow.ShowDialog();
+    }
+
 
     private async Task RefreshCreditAsync() {
         if (this._isRefreshing) return;
