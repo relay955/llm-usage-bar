@@ -1,7 +1,7 @@
 using System.Windows;
 using System.Windows.Input;
-using LLMUsageBar.Models;
-using LLMUsageBar.Services;
+
+using LLMUsageBar.Module;
 
 namespace LLMUsageBar.ui;
 

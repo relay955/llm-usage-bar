@@ -4,7 +4,7 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace LLMUsageBar.module;
+namespace LLMUsageBar.Provider;
 
 public sealed class OpenRouterProvider : ILlmProvider {
     static readonly Uri CreditsEndpoint = new("https://openrouter.ai/api/v1/credits");
