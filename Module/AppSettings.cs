@@ -13,6 +13,9 @@ public sealed class AppSettings:INotifyPropertyChanged {
     public int RefreshIntervalMinutes { get; set; }
     public bool UseOpenRouter { get; set; }
     public string OpenRouterApiKey { get; set; } = "";
+    public bool UseChutes { get; set; }
+    public string ChutesApiKey { get; set; } = "";
+    public string ChutesUserIdOrUsername { get; set; } = "";
 }
 
 public static class AppSettingsStore {
@@ -20,6 +23,9 @@ public static class AppSettingsStore {
     private const string RefreshIntervalKey = "refresh_interval_minutes";
     private const string UseOpenRouterKey = "useOpenRouter";
     private const string OpenRouterApiKeyKey = "OpenRouterApiKey";
+    private const string UseChutesKey = "useChutes";
+    private const string ChutesApiKeyKey = "ChutesApiKey";
+    private const string ChutesUserIdOrUsernameKey = "ChutesUserIdOrUsername";
 
     public static string SettingsFilePath {
         get {
@@ -39,7 +45,10 @@ public static class AppSettingsStore {
         return new AppSettings {
             RefreshIntervalMinutes = ReadPositiveInt(table, RefreshIntervalKey, 10),
             UseOpenRouter = ReadBool(table, UseOpenRouterKey, false),
-            OpenRouterApiKey = ReadString(table, OpenRouterApiKeyKey, "")
+            OpenRouterApiKey = ReadString(table, OpenRouterApiKeyKey, ""),
+            UseChutes = ReadBool(table, UseChutesKey, false),
+            ChutesApiKey = ReadString(table, ChutesApiKeyKey, ""),
+            ChutesUserIdOrUsername = ReadString(table, ChutesUserIdOrUsernameKey, "")
         };
     }
 
@@ -49,7 +58,10 @@ public static class AppSettingsStore {
         var table = new TomlTable {
             [RefreshIntervalKey] = Math.Max(1, settings.RefreshIntervalMinutes),
             [UseOpenRouterKey] = settings.UseOpenRouter,
-            [OpenRouterApiKeyKey] = settings.OpenRouterApiKey
+            [OpenRouterApiKeyKey] = settings.OpenRouterApiKey,
+            [UseChutesKey] = settings.UseChutes,
+            [ChutesApiKeyKey] = settings.ChutesApiKey,
+            [ChutesUserIdOrUsernameKey] = settings.ChutesUserIdOrUsername
         };
 
         File.WriteAllText(SettingsFilePath, TomlSerializer.Serialize(table), Encoding.UTF8);

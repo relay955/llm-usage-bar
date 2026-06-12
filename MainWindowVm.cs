@@ -13,7 +13,7 @@ public class MainWindowVm:INotifyPropertyChanged {
 
     readonly DispatcherTimer _refreshTimer = new();
     bool _isRefreshing;
-    public string CreditText { get; set; } = "OpenRouter 조회 중...";
+    public string CreditText { get; set; } = "조회 중...";
     public ICommand OpenSettingsCommand { get; }
     
     public MainWindowVm() {
@@ -54,28 +54,62 @@ public class MainWindowVm:INotifyPropertyChanged {
     async Task RefreshCreditAsync() {
         if (this._isRefreshing) return;
 
-        if (!App.Settings.UseOpenRouter) {
-            CreditText = "OpenRouter 미사용";
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(App.Settings.OpenRouterApiKey)) {
-            CreditText = "OpenRouter API 키 필요";
+        if (!App.Settings.UseOpenRouter && !App.Settings.UseChutes) {
+            CreditText = "프로바이더 미사용";
             return;
         }
 
         this._isRefreshing = true;
 
         try {
-            var provider = new OpenRouterProvider(App.Settings.OpenRouterApiKey);
-            ILlmProvider.Balance balance = await provider.GetCurrentBalanceAsync();
-            CreditText = $"OpenRouter ${balance.Remain:0.00}";
-        }
-        catch {
-            CreditText = "OpenRouter 조회 실패";
+            List<string> creditParts = new();
+
+            if (App.Settings.UseOpenRouter) {
+                creditParts.Add(await GetOpenRouterCreditTextAsync());
+            }
+
+            if (App.Settings.UseChutes) {
+                creditParts.Add(await GetChutesCreditTextAsync());
+            }
+
+            CreditText = string.Join(" | ", creditParts);
         }
         finally {
             this._isRefreshing = false;
+        }
+    }
+
+    async Task<string> GetOpenRouterCreditTextAsync() {
+        if (string.IsNullOrWhiteSpace(App.Settings.OpenRouterApiKey)) {
+            return "OpenRouter API 키 필요";
+        }
+
+        try {
+            var provider = new OpenRouterProvider(App.Settings.OpenRouterApiKey);
+            ILlmProvider.Balance balance = await provider.GetCurrentBalanceAsync();
+            return $"OpenRouter ${balance.Remain:0.00}";
+        }
+        catch {
+            return "OpenRouter 조회 실패";
+        }
+    }
+
+    async Task<string> GetChutesCreditTextAsync() {
+        if (string.IsNullOrWhiteSpace(App.Settings.ChutesApiKey)) {
+            return "Chutes API 키 필요";
+        }
+
+        if (string.IsNullOrWhiteSpace(App.Settings.ChutesUserIdOrUsername)) {
+            return "Chutes 사용자 필요";
+        }
+
+        try {
+            var provider = new ChutesProvider(App.Settings.ChutesApiKey, App.Settings.ChutesUserIdOrUsername);
+            ILlmProvider.Balance balance = await provider.GetCurrentBalanceAsync();
+            return $"Chutes ${balance.Remain:0.00}";
+        }
+        catch {
+            return "Chutes 조회 실패";
         }
     }
 }
