@@ -11,6 +11,7 @@ namespace LLMUsageBar.ui;
 public class SettingsVm:INotifyPropertyChanged {
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    public int SelectedTabIndex { get; set; }
     public AppSettings AppSettings { get; set; }
     public string ValidationMessage { get; set; } = "";
 

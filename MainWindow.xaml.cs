@@ -95,7 +95,4 @@ public partial class MainWindow : Window {
     }
 
     void OnClosed(object? sender, EventArgs e) => this._vm.StopTimer();
-    //
-    // [DllImport("user32.dll")]
-    // static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
 }

@@ -11,7 +11,6 @@ namespace LLMUsageBar;
 public class MainWindowVm:INotifyPropertyChanged {
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    const string OpenRouterApiKey = "";
     readonly DispatcherTimer _refreshTimer = new();
     bool _isRefreshing;
     public string CreditText { get; set; } = "OpenRouter 조회 중...";
@@ -43,14 +42,24 @@ public class MainWindowVm:INotifyPropertyChanged {
     
     async Task OpenSettingsAsync(Window? owner) {
         var settingsWindow = new Settings { Owner = owner };
-        settingsWindow.ShowDialog();
+        bool? result = settingsWindow.ShowDialog();
+
+        if(result == true) {
+            ConfigureRefreshTimer();
+            await RefreshCreditAsync();
+        }
     }
 
 
-    private async Task RefreshCreditAsync() {
+    async Task RefreshCreditAsync() {
         if (this._isRefreshing) return;
 
-        if (string.IsNullOrWhiteSpace(OpenRouterApiKey)) {
+        if (!App.Settings.UseOpenRouter) {
+            CreditText = "OpenRouter 미사용";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(App.Settings.OpenRouterApiKey)) {
             CreditText = "OpenRouter API 키 필요";
             return;
         }
@@ -58,7 +67,7 @@ public class MainWindowVm:INotifyPropertyChanged {
         this._isRefreshing = true;
 
         try {
-            var provider = new OpenRouterProvider(OpenRouterApiKey);
+            var provider = new OpenRouterProvider(App.Settings.OpenRouterApiKey);
             ILlmProvider.Balance balance = await provider.GetCurrentBalanceAsync();
             CreditText = $"OpenRouter ${balance.Remain:0.00}";
         }
