@@ -31,18 +31,19 @@
             <Button Width="28"
                     Height="28"
                     Margin="0,0,5,0"
+                    Style="{StaticResource IconButton}"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Center"
                     Command="{Binding OpenSettingsCommand}"
                     CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
                     ToolTip="설정"
-                    Cursor="Hand"
-                    Background="Transparent"
-                    BorderBrush="Transparent"
                     Foreground="#FFFFFFFF"
-                    FontSize="15"
-                    Padding="0"
-                    Content="⚙" />
+                    FontSize="15">
+                <Image Source="Assets/settings.png"
+                       Width="18"
+                       Height="18"
+                       Stretch="Uniform" />
+            </Button>
         </Grid>
     </Border>
 </Window>
