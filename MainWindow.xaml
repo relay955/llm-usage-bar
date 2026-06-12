@@ -14,6 +14,9 @@
         Background="Transparent"
         Topmost="True"
         ShowInTaskbar="False">
+    <Window.DataContext>
+        <Binding Source="{RelativeSource Self}"/>
+    </Window.DataContext>
     <Border BorderBrush="#FFFF3B30"
             BorderThickness="1"
             Background="Transparent">
