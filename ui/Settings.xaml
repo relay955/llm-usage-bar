@@ -71,7 +71,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        <Style x:Key="SettingsPanelStyle" TargetType="{x:Type Grid}">
+        <Style x:Key="SettingsPanelStyle" TargetType="{x:Type FrameworkElement}">
             <Setter Property="Visibility" Value="Collapsed" />
         </Style>
     </Window.Resources>
@@ -123,93 +123,31 @@
 
             <TextBlock Grid.Row="0" Text="설정" Foreground="#FFFFFFFF" FontSize="18" FontWeight="SemiBold" />
 
-            <Grid Grid.Row="1"
-                  Margin="0,20,0,0">
-                <Grid.Style>
-                    <Style TargetType="{x:Type Grid}" BasedOn="{StaticResource SettingsPanelStyle}">
+            <local:GeneralSettingsControl Grid.Row="1"
+                                          Margin="0,20,0,0">
+                <local:GeneralSettingsControl.Style>
+                    <Style TargetType="{x:Type local:GeneralSettingsControl}" BasedOn="{StaticResource SettingsPanelStyle}">
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding SelectedTabIndex}" Value="0">
                                 <Setter Property="Visibility" Value="Visible" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
-                </Grid.Style>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="96" />
-                    <ColumnDefinition Width="36" />
-                </Grid.ColumnDefinitions>
+                </local:GeneralSettingsControl.Style>
+            </local:GeneralSettingsControl>
 
-                <TextBlock Grid.Column="0"
-                           Text="자동갱신 주기"
-                           Foreground="#FFE8E8E8"
-                           FontSize="13"
-                           VerticalAlignment="Center" />
-
-                <TextBox Grid.Column="1"
-                         Height="30"
-                         VerticalContentAlignment="Center"
-                         HorizontalContentAlignment="Right"
-                         Padding="8,0"
-                         Text="{Binding AppSettings.RefreshIntervalMinutes, UpdateSourceTrigger=PropertyChanged}" />
-
-                <TextBlock Grid.Column="2"
-                           Text="분"
-                           Margin="8,0,0,0"
-                           Foreground="#FFE8E8E8"
-                           FontSize="13"
-                           VerticalAlignment="Center" />
-            </Grid>
-
-            <Grid Grid.Row="1"
-                  Margin="0,20,0,0">
-                <Grid.Style>
-                    <Style TargetType="{x:Type Grid}" BasedOn="{StaticResource SettingsPanelStyle}">
+            <local:OpenRouterSettingsControl Grid.Row="1"
+                                             Margin="0,20,0,0">
+                <local:OpenRouterSettingsControl.Style>
+                    <Style TargetType="{x:Type local:OpenRouterSettingsControl}" BasedOn="{StaticResource SettingsPanelStyle}">
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding SelectedTabIndex}" Value="1">
                                 <Setter Property="Visibility" Value="Visible" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
-                </Grid.Style>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="260" />
-                </Grid.ColumnDefinitions>
-
-                <TextBlock Grid.Row="0"
-                           Grid.Column="0"
-                           Text="OpenRouter 사용"
-                           Foreground="#FFE8E8E8"
-                           FontSize="13"
-                           VerticalAlignment="Center" />
-
-                <CheckBox Grid.Row="0"
-                          Grid.Column="1"
-                          HorizontalAlignment="Left"
-                          VerticalAlignment="Center"
-                          IsChecked="{Binding AppSettings.UseOpenRouter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-
-                <TextBlock Grid.Row="1"
-                           Grid.Column="0"
-                           Margin="0,16,0,0"
-                           Text="API Key"
-                           Foreground="#FFE8E8E8"
-                           FontSize="13"
-                           VerticalAlignment="Center" />
-
-                <TextBox Grid.Row="1"
-                         Grid.Column="1"
-                         Margin="0,16,0,0"
-                         Height="30"
-                         VerticalContentAlignment="Center"
-                         Padding="8,0"
-                         Text="{Binding AppSettings.OpenRouterApiKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-            </Grid>
+                </local:OpenRouterSettingsControl.Style>
+            </local:OpenRouterSettingsControl>
         </Grid>
     </DockPanel>
 </Window>
