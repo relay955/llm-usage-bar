@@ -15,7 +15,7 @@
         Background="#FF1E1E1E">
     <shell:WindowChrome.WindowChrome>
         <shell:WindowChrome CaptionHeight="48"
-                            CornerRadius="0"
+                            CornerRadius="10"
                             GlassFrameThickness="0"
                             ResizeBorderThickness="0"
                             UseAeroCaptionButtons="False" />
@@ -197,10 +197,7 @@
         </Border>
 
 
-        <StackPanel DockPanel.Dock="Bottom"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Right"
-                    Margin="12">
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="12">
             <TextBlock
                 Margin="0,12,0,0" Foreground="#FFFF453A" FontSize="12"
                 Text="{Binding ValidationMessage}"
