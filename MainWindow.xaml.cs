@@ -22,7 +22,7 @@ public partial class MainWindow : Window {
         Topmost = true;
 
         PlaceNearTaskbarTray();
-        _vm.Start();
+        _vm.StartTimer();
     }
 
     /// <summary>
@@ -72,5 +72,5 @@ public partial class MainWindow : Window {
 
     static double GetTaskbarLikeHeight(double taskbarHeight) => Math.Clamp(taskbarHeight, 32, 80);
 
-    void OnClosed(object? sender, EventArgs e) => this._vm.Stop();
+    void OnClosed(object? sender, EventArgs e) => this._vm.StopTimer();
 }
