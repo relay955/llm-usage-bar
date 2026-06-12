@@ -13,14 +13,27 @@ public class MainWindowVm:INotifyPropertyChanged {
 
     readonly DispatcherTimer _refreshTimer = new();
     bool _isRefreshing;
+    int _selectedProviderIndex;
+
     public string CreditText { get; set; } = "조회 중...";
+    public bool HasMultipleProviders { get; set; }
+
     public ICommand OpenSettingsCommand { get; }
+    public ICommand PreviousProviderCommand { get; }
+    public ICommand NextProviderCommand { get; }
     
     public MainWindowVm() {
         OpenSettingsCommand = new Command(async void (owner) => {
             await OpenSettingsAsync(owner as Window);
         });
+        PreviousProviderCommand = new Command(async void (_) => {
+            await ChangeProviderAsync(-1);
+        });
+        NextProviderCommand = new Command(async void (_) => {
+            await ChangeProviderAsync(1);
+        });
     }
+
     public void StartTimer() {
         ConfigureRefreshTimer();
         _ = RefreshCreditAsync();
@@ -54,29 +67,69 @@ public class MainWindowVm:INotifyPropertyChanged {
     async Task RefreshCreditAsync() {
         if (this._isRefreshing) return;
 
-        if (!App.Settings.UseOpenRouter && !App.Settings.UseChutes) {
+        List<string> providerNames = GetEnabledProviderNames();
+        HasMultipleProviders = providerNames.Count > 1;
+
+        if (providerNames.Count == 0) {
             CreditText = "프로바이더 미사용";
             return;
         }
 
+        EnsureSelectedProviderIndex(providerNames);
         this._isRefreshing = true;
 
         try {
-            List<string> creditParts = new();
-
-            if (App.Settings.UseOpenRouter) {
-                creditParts.Add(await GetOpenRouterCreditTextAsync());
-            }
-
-            if (App.Settings.UseChutes) {
-                creditParts.Add(await GetChutesCreditTextAsync());
-            }
-
-            CreditText = string.Join(" | ", creditParts);
+            CreditText = await GetProviderCreditTextAsync(providerNames[this._selectedProviderIndex]);
         }
         finally {
             this._isRefreshing = false;
         }
+    }
+
+    async Task ChangeProviderAsync(int direction) {
+        List<string> providerNames = GetEnabledProviderNames();
+        HasMultipleProviders = providerNames.Count > 1;
+
+        if (providerNames.Count <= 1) return;
+
+        this._selectedProviderIndex += direction;
+
+        if (this._selectedProviderIndex < 0) {
+            this._selectedProviderIndex = providerNames.Count - 1;
+        }
+        else if (this._selectedProviderIndex >= providerNames.Count) {
+            this._selectedProviderIndex = 0;
+        }
+
+        await RefreshCreditAsync();
+    }
+
+    static List<string> GetEnabledProviderNames() {
+        List<string> providerNames = new();
+
+        if (App.Settings.UseOpenRouter) {
+            providerNames.Add("OpenRouter");
+        }
+
+        if (App.Settings.UseChutes) {
+            providerNames.Add("Chutes");
+        }
+
+        return providerNames;
+    }
+
+    void EnsureSelectedProviderIndex(List<string> providerNames) {
+        if (this._selectedProviderIndex < 0 || this._selectedProviderIndex >= providerNames.Count) {
+            this._selectedProviderIndex = 0;
+        }
+    }
+
+    async Task<string> GetProviderCreditTextAsync(string providerName) {
+        return providerName switch {
+            "OpenRouter" => await GetOpenRouterCreditTextAsync(),
+            "Chutes" => await GetChutesCreditTextAsync(),
+            _ => "프로바이더 오류"
+        };
     }
 
     async Task<string> GetOpenRouterCreditTextAsync() {
