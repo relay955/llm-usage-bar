@@ -6,8 +6,8 @@
         xmlns:local="clr-namespace:LLMUsageBar.ui"
         mc:Ignorable="d"
         Title="설정"
-        Height="220"
-        Width="360"
+        Height="420"
+        Width="560"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner"
         Background="#FF1E1E1E">
@@ -18,59 +18,75 @@
         <Binding Source="{StaticResource Vm}" />
     </Window.DataContext>
 
-    <Grid Margin="18">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+    <DockPanel Margin="18">
+        <Border DockPanel.Dock="Left"
+                Width="132"
+                Margin="0,0,18,0"
+                BorderBrush="#FF333333"
+                BorderThickness="0,0,1,0">
+            <ListBox SelectedIndex="0"
+                     Background="Transparent"
+                     BorderThickness="0"
+                     Foreground="#FFE8E8E8">
+                <ListBoxItem Content="General" Padding="10,8" />
+                <ListBoxItem Content="Openrouter" Padding="10,8" />
+            </ListBox>
+        </Border>
 
-        <TextBlock Grid.Row="0" Text="설정" Foreground="#FFFFFFFF" FontSize="18" FontWeight="SemiBold" />
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-        <Grid Grid.Row="1"
-              Margin="0,20,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="96" />
-                <ColumnDefinition Width="36" />
-            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Row="0" Text="설정" Foreground="#FFFFFFFF" FontSize="18" FontWeight="SemiBold" />
 
-            <TextBlock Grid.Column="0"
-                       Text="자동갱신 주기"
-                       Foreground="#FFE8E8E8"
-                       FontSize="13"
-                       VerticalAlignment="Center" />
+            <Grid Grid.Row="1"
+                  Margin="0,20,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="96" />
+                    <ColumnDefinition Width="36" />
+                </Grid.ColumnDefinitions>
 
-            <TextBox Grid.Column="1"
-                     Height="30"
-                     VerticalContentAlignment="Center"
-                     HorizontalContentAlignment="Right"
-                     Padding="8,0"
-                     Text="{Binding AppSettings.RefreshIntervalMinutes, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Grid.Column="0"
+                           Text="자동갱신 주기"
+                           Foreground="#FFE8E8E8"
+                           FontSize="13"
+                           VerticalAlignment="Center" />
 
-            <TextBlock Grid.Column="2"
-                       Text="분"
-                       Margin="8,0,0,0"
-                       Foreground="#FFE8E8E8"
-                       FontSize="13"
-                       VerticalAlignment="Center" />
+                <TextBox Grid.Column="1"
+                         Height="30"
+                         VerticalContentAlignment="Center"
+                         HorizontalContentAlignment="Right"
+                         Padding="8,0"
+                         Text="{Binding AppSettings.RefreshIntervalMinutes, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Grid.Column="2"
+                           Text="분"
+                           Margin="8,0,0,0"
+                           Foreground="#FFE8E8E8"
+                           FontSize="13"
+                           VerticalAlignment="Center" />
+            </Grid>
+
+            <StackPanel Grid.Row="3"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right">
+                <TextBlock
+                    Margin="0,12,0,0" Foreground="#FFFF453A" FontSize="12"
+                    Text="{Binding ValidationMessage}"
+                    TextWrapping="Wrap" />
+                <Button Content="취소"
+                        Width="72" Height="30" Margin="0,0,8,0"
+                        Command="{Binding CancelCommand}"
+                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}" />
+                <Button Content="저장"
+                        Width="72" Height="30" Command="{Binding SaveCommand}"
+                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}" />
+            </StackPanel>
         </Grid>
-
-        <StackPanel Grid.Row="3"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Right">
-            <TextBlock
-                Margin="0,12,0,0" Foreground="#FFFF453A" FontSize="12"
-                Text="{Binding ValidationMessage}"
-                TextWrapping="Wrap" />
-            <Button Content="취소"
-                    Width="72" Height="30" Margin="0,0,8,0"
-                    Command="{Binding CancelCommand}"
-                    CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}" />
-            <Button Content="저장"
-                    Width="72" Height="30" Command="{Binding SaveCommand}"
-                    CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}" />
-        </StackPanel>
-    </Grid>
+    </DockPanel>
 </Window>
