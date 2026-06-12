@@ -13,8 +13,14 @@
         AllowsTransparency="True"
         Background="Transparent"
         Topmost="True"
-        d:DataContext="{d:DesignInstance local:MainWindow}"
         ShowInTaskbar="False">
+    <Window.Resources>
+        <local:MainWindowVm x:Key="Vm" />
+    </Window.Resources>
+    <Window.DataContext>
+        <Binding Source="{StaticResource Vm}" />
+    </Window.DataContext>
+    
     
     <Border BorderBrush="#FFFF3B30"
             BorderThickness="1"
@@ -31,7 +37,8 @@
                     Margin="0,0,5,0"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Center"
-                    Click="OpenSettingsButton_Click"
+                    Command="{Binding OpenSettingsCommand}"
+                    CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
                     ToolTip="설정"
                     Cursor="Hand"
                     Background="Transparent"

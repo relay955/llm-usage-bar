@@ -1,27 +1,17 @@
-using System.ComponentModel;
 using System.Windows;
-using System.Windows.Threading;
-using LLMUsageBar.Provider;
-using LLMUsageBar.ui;
 
 namespace LLMUsageBar;
 
-public partial class MainWindow : Window,INotifyPropertyChanged {
-    public event PropertyChangedEventHandler? PropertyChanged;
-    
-    private const string OpenRouterApiKey = "";
-    private const double TargetWidth = 230;
-    private const double EdgePadding = 300;
-    private const double DefaultTaskbarHeight = 40;
+public partial class MainWindow : Window {
+    const double TargetWidth = 230;
+    const double EdgePadding = 300;
+    const double DefaultTaskbarHeight = 40;
 
-    private readonly DispatcherTimer _refreshTimer = new();
-    private bool _isRefreshing;
-
-    public string CreditText { get; set; } = "OpenRouter 조회 중...";
+    readonly MainWindowVm _vm;
 
     public MainWindow() {
         InitializeComponent();
-        DataContext = this;
+        _vm = (FindResource("Vm") as MainWindowVm)!;
 
         Loaded += OnLoaded;
         Closed += OnClosed;
@@ -32,10 +22,14 @@ public partial class MainWindow : Window,INotifyPropertyChanged {
         Topmost = true;
 
         PlaceNearTaskbarTray();
-        ConfigureRefreshTimer();
-        _ = RefreshCreditAsync();
+        _vm.Start();
     }
 
+    /// <summary>
+    /// 작업 표시줄 트레이 근처에 창을 위치시킵니다.
+    /// 화면의 작업 영역(`SystemParameters.WorkArea`)과 화면의 너비 및 높이를 기준으로
+    /// 작업 표시줄의 위치를 분석하고, 창의 크기와 위치를 적절히 조정합니다.
+    /// </summary>
     private void PlaceNearTaskbarTray() {
         Rect workArea = SystemParameters.WorkArea;
         double screenWidth = SystemParameters.PrimaryScreenWidth;
@@ -76,59 +70,7 @@ public partial class MainWindow : Window,INotifyPropertyChanged {
         Top = screenHeight - Height - EdgePadding;
     }
 
-    private static double GetTaskbarLikeHeight(double taskbarHeight) {
-        return Math.Clamp(taskbarHeight, 32, 80);
-    }
+    static double GetTaskbarLikeHeight(double taskbarHeight) => Math.Clamp(taskbarHeight, 32, 80);
 
-    private async void OpenSettingsButton_Click(object sender, RoutedEventArgs e) {
-        var settingsWindow = new Settings {
-            Owner = this
-        };
-
-        if (settingsWindow.ShowDialog() == true) {
-            ConfigureRefreshTimer();
-            await RefreshCreditAsync();
-        }
-    }
-
-    private void ConfigureRefreshTimer() {
-        this._refreshTimer.Stop();
-        this._refreshTimer.Interval = TimeSpan.FromMinutes(Math.Max(1, App.Settings.RefreshIntervalMinutes));
-        this._refreshTimer.Tick -= RefreshTimer_Tick;
-        this._refreshTimer.Tick += RefreshTimer_Tick;
-        this._refreshTimer.Start();
-    }
-
-    private async void RefreshTimer_Tick(object? sender, EventArgs e) {
-        await RefreshCreditAsync();
-    }
-
-    private async Task RefreshCreditAsync() {
-        if (this._isRefreshing) {
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(OpenRouterApiKey)) {
-            CreditText = "OpenRouter API 키 필요";
-            return;
-        }
-
-        this._isRefreshing = true;
-
-        try {
-            var provider = new OpenRouterProvider(OpenRouterApiKey);
-            ILlmProvider.Balance balance = await provider.GetCurrentBalanceAsync();
-            CreditText = $"OpenRouter ${balance.Remain:0.00}";
-        }
-        catch {
-            CreditText = "OpenRouter 조회 실패";
-        }
-        finally {
-            this._isRefreshing = false;
-        }
-    }
-
-    private void OnClosed(object? sender, EventArgs e) {
-        this._refreshTimer.Stop();
-    }
+    void OnClosed(object? sender, EventArgs e) => this._vm.Stop();
 }
