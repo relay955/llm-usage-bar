@@ -26,6 +26,7 @@
             <TextBlock Text="{Binding CreditText}"
                        FontSize="14"
                        FontWeight="SemiBold"
+                       Foreground="#353535"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center" />
             <Button Width="28"
