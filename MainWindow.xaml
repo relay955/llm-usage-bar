@@ -21,13 +21,9 @@
         <Binding Source="{StaticResource Vm}" />
     </Window.DataContext>
     
-    
-    <Border BorderBrush="#FFFF3B30"
-            BorderThickness="1"
-            Background="#CC111111">
+    <Border BorderThickness="1">
         <Grid>
             <TextBlock Text="{Binding CreditText}"
-                       Foreground="#FFFFFFFF"
                        FontSize="14"
                        FontWeight="SemiBold"
                        HorizontalAlignment="Center"
