@@ -129,18 +129,8 @@
                     CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}" />
         </StackPanel>
 
-        <Grid Margin="12">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-
-            <TextBlock Grid.Row="0" Text="설정" Foreground="#FFFFFFFF" FontSize="18" FontWeight="SemiBold" />
-
-            <ContentControl Grid.Row="1"
-                            Style="{StaticResource SettingsContentControlStyle}" />
-        </Grid>
+        <StackPanel>
+            <ContentControl Style="{StaticResource SettingsContentControlStyle}" />
+        </StackPanel>
     </DockPanel>
 </Window>
