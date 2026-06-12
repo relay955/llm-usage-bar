@@ -1,0 +1,27 @@
+<Window x:Class="LLMUsageBar.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LLMUsageBar"
+        mc:Ignorable="d"
+        Title="LLMUsageBar"
+        Width="200"
+        Height="40"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False">
+    <Border BorderBrush="#FFFF3B30"
+            BorderThickness="1"
+            Background="Transparent">
+        <TextBlock Text="test"
+                   Foreground="#FFFFFFFF"
+                   FontSize="14"
+                   FontWeight="SemiBold"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center" />
+    </Border>
+</Window>
