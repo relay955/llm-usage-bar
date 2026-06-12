@@ -1,4 +1,6 @@
+using System.ComponentModel;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 using Tomlyn;
@@ -6,10 +8,9 @@ using Tomlyn.Model;
 
 namespace LLMUsageBar.Module;
 
-public sealed class AppSettings {
-    public const int DefaultRefreshIntervalMinutes = 10;
-
-    public int RefreshIntervalMinutes { get; set; } = DefaultRefreshIntervalMinutes;
+public sealed class AppSettings:INotifyPropertyChanged {
+    public event PropertyChangedEventHandler? PropertyChanged;
+    public int RefreshIntervalMinutes { get; set; }
 }
 
 public static class AppSettingsStore {
@@ -32,7 +33,7 @@ public static class AppSettingsStore {
         TomlTable table = TomlSerializer.Deserialize<TomlTable>(content) ?? new TomlTable();
 
         return new AppSettings {
-            RefreshIntervalMinutes = ReadPositiveInt(table, RefreshIntervalKey, AppSettings.DefaultRefreshIntervalMinutes)
+            RefreshIntervalMinutes = ReadPositiveInt(table, RefreshIntervalKey, 10)
         };
     }
 
