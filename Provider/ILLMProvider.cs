@@ -6,6 +6,7 @@ public interface ILlmProvider {
     Task<Quota> GetCurrentQuotaAsync();
     Task<Balance> GetCurrentBalanceAsync(AppSettings settings);
     
+    public abstract string Name { get; }
     public abstract bool HasQuota { get; }
     public abstract bool HasBalance { get; }
     
@@ -18,5 +19,4 @@ public interface ILlmProvider {
         public double Remain { get; set; }
     }
 }
-
 
