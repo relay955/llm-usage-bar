@@ -27,19 +27,16 @@ public sealed class ChutesProvider(HttpClient? httpClient = null) : ILlmProvider
     /// Chutes 사용자 잔액 API를 호출해 남은 잔액을 조회합니다.
     /// </summary>
     public async Task<ILlmProvider.Balance> GetCurrentBalanceAsync(AppSettings settings) {
-        if (string.IsNullOrWhiteSpace(settings.ChutesApiKey)) {
-            throw new ArgumentException("No API Key", nameof(settings));
-        }
-
-        if (string.IsNullOrWhiteSpace(settings.ChutesUserIdOrUsername)) {
-            throw new ArgumentException("No user ID", nameof(settings));
-        }
+        if (string.IsNullOrWhiteSpace(settings.ChutesApiKey))
+            throw new InvalidOperationException("No API Key");
+        if (string.IsNullOrWhiteSpace(settings.ChutesUserIdOrUsername))
+            throw new InvalidOperationException("No user ID");
 
         try {
-            using HttpResponseMessage response = await SendBalanceRequestAsync(settings, useBearerScheme: false);
+            using var response = await SendBalanceRequestAsync(settings, useBearerScheme: false);
 
             if (response.StatusCode == HttpStatusCode.Unauthorized) {
-                using HttpResponseMessage bearerResponse = await SendBalanceRequestAsync(settings, useBearerScheme: true);
+                using var bearerResponse = await SendBalanceRequestAsync(settings, useBearerScheme: true);
                 bearerResponse.EnsureSuccessStatusCode();
                 return await ReadBalanceAsync(bearerResponse);
             }
