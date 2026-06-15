@@ -18,6 +18,8 @@ public class MainWindowVm:INotifyPropertyChanged {
     bool _isRefreshing;
     int _selectedProviderIndex;
 
+    public string ProviderName { get; set; } = "";
+    public string ErrorMessage { get; set; } = "";
     public string CreditText { get; set; } = "조회 중...";
     public bool HasMultipleProviders => this._providerList.Count > 1;
 
@@ -70,18 +72,23 @@ public class MainWindowVm:INotifyPropertyChanged {
         if (this._isRefreshing) return;
 
         if (this._providerList.Count == 0) {
-            CreditText = "프로바이더 미사용";
+            ProviderName = "";
+            ErrorMessage = "프로바이더 미사용";
+            CreditText = "-";
             return;
         }
 
         this._isRefreshing = true;
+        ErrorMessage = "";
 
         try {
             var selectedProvider = this._providerList[this._selectedProviderIndex];
+            ProviderName = selectedProvider.Name;
             var balance = await selectedProvider.GetCurrentBalanceAsync(App.Settings);
             CreditText = $"${balance.Remain:0.00}";
         } catch(Exception e) {
-            CreditText = e.Message;
+            ErrorMessage = e.Message;
+            CreditText = "-";
         } finally {
             this._isRefreshing = false;
         }
@@ -110,5 +117,9 @@ public class MainWindowVm:INotifyPropertyChanged {
 
         if (this._selectedProviderIndex < 0 || this._selectedProviderIndex >= this._providerList.Count) 
             this._selectedProviderIndex = 0;
+
+        ProviderName = this._providerList.Count == 0
+            ? ""
+            : this._providerList[this._selectedProviderIndex].Name;
     }
 }
