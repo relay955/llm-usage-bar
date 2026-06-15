@@ -12,6 +12,7 @@ public sealed class ChutesProvider(HttpClient? httpClient = null) : ILlmProvider
 
     readonly HttpClient _httpClient = httpClient ?? new HttpClient();
 
+    public string Name => "Chutes";
     public bool HasQuota => false;
     public bool HasBalance => true;
 

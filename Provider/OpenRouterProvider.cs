@@ -13,6 +13,7 @@ public sealed class OpenRouterProvider(HttpClient? httpClient = null) : ILlmProv
 
     readonly HttpClient _httpClient = httpClient ?? new HttpClient();
 
+    public string Name => "OpenRouter";
     public bool HasQuota => false;
     public bool HasBalance => true;
 
