@@ -82,12 +82,29 @@
                     <TextBlock Text="v" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Button>
             </StackPanel>
-            <TextBlock Text="{Binding CreditText}"
-                       FontSize="14"
-                       FontWeight="SemiBold"
-                       Foreground="#353535"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center" />
+            <StackPanel HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Left"
+                            Margin="0,0,0,1">
+                    <TextBlock Text="{Binding ProviderName}"
+                               FontSize="9"
+                               FontWeight="SemiBold"
+                               Foreground="#777777" />
+                    <TextBlock Text="{Binding ErrorMessage}"
+                               Margin="6,0,0,0"
+                               FontSize="9"
+                               FontWeight="SemiBold"
+                               Foreground="#C0392B" />
+                </StackPanel>
+                <TextBlock FontSize="14"
+                           FontWeight="SemiBold"
+                           Foreground="#353535"
+                           HorizontalAlignment="Left">
+                    <Run Text="Credits : " />
+                    <Run Text="{Binding CreditText}" />
+                </TextBlock>
+            </StackPanel>
             <Button Width="28"
                     Height="28"
                     Margin="0,0,5,0"
