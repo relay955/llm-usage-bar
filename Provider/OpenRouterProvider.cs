@@ -28,9 +28,8 @@ public sealed class OpenRouterProvider(HttpClient? httpClient = null) : ILlmProv
     /// OpenRouter 크레딧 API를 호출해 남은 잔액을 조회합니다.
     /// </summary>
     public async Task<ILlmProvider.Balance> GetCurrentBalanceAsync(AppSettings settings) {
-        if (string.IsNullOrWhiteSpace(settings.OpenRouterApiKey)) {
-            throw new ArgumentException("No API key", nameof(settings));
-        }
+        if (string.IsNullOrWhiteSpace(settings.OpenRouterApiKey))
+            throw new InvalidOperationException("No API key");
 
         try {
             using HttpRequestMessage request = new(HttpMethod.Get, CreditsEndpoint);
@@ -40,7 +39,7 @@ public sealed class OpenRouterProvider(HttpClient? httpClient = null) : ILlmProv
             response.EnsureSuccessStatusCode();
 
             await using Stream responseStream = await response.Content.ReadAsStreamAsync();
-            OpenRouterCreditsResponse? credits = await JsonSerializer.DeserializeAsync<OpenRouterCreditsResponse>(
+            var credits = await JsonSerializer.DeserializeAsync<OpenRouterCreditsResponse>(
                 responseStream,
                 JsonOptions
             );
