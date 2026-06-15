@@ -12,11 +12,11 @@ public class MainWindowVm:INotifyPropertyChanged {
     public event PropertyChangedEventHandler? PropertyChanged;
 
     readonly DispatcherTimer _refreshTimer = new();
+    readonly List<ILlmProvider> ProviderList = new();
     bool _isRefreshing;
     int _selectedProviderIndex;
 
     public string CreditText { get; set; } = "조회 중...";
-    public bool HasMultipleProviders { get; set; }
 
     public ICommand OpenSettingsCommand { get; }
     public ICommand PreviousProviderCommand { get; }
@@ -34,7 +34,8 @@ public class MainWindowVm:INotifyPropertyChanged {
         });
     }
 
-    public void StartTimer() {
+    public void Init() {
+        PrepareProviderList();
         ConfigureRefreshTimer();
         _ = RefreshCreditAsync();
     }
@@ -49,38 +50,31 @@ public class MainWindowVm:INotifyPropertyChanged {
         this._refreshTimer.Start();
     }
 
-    async void RefreshTimer_Tick(object? sender, EventArgs e) {
-        await RefreshCreditAsync();
-    }
-    
+    async void RefreshTimer_Tick(object? sender, EventArgs e) => await RefreshCreditAsync();
+
     async Task OpenSettingsAsync(Window? owner) {
         var settingsWindow = new Settings { Owner = owner };
         bool? result = settingsWindow.ShowDialog();
+        if (result != true) return;
 
-        if(result == true) {
-            ConfigureRefreshTimer();
-            await RefreshCreditAsync();
-        }
+        PrepareProviderList();
+        ConfigureRefreshTimer();
+        await RefreshCreditAsync();
     }
 
 
     async Task RefreshCreditAsync() {
         if (this._isRefreshing) return;
 
-        var providerNames = GetEnabledProviderNames();
-        HasMultipleProviders = providerNames.Count > 1;
-
-        if (providerNames.Count == 0) {
+        if (this.ProviderList.Count == 0) {
             CreditText = "프로바이더 미사용";
             return;
         }
 
-        EnsureSelectedProviderIndex(providerNames);
         this._isRefreshing = true;
 
         try {
-            CreditText = await GetProviderCreditTextAsync(providerNames[this._selectedProviderIndex]);
-        }
+            CreditText = await GetProviderCreditTextAsync(this.ProviderList[this._selectedProviderIndex]); }
         finally {
             this._isRefreshing = false;
         }
@@ -88,60 +82,44 @@ public class MainWindowVm:INotifyPropertyChanged {
 
     async Task ChangeProviderAsync(int direction) {
         if (this._isRefreshing) return;
-
-        var providerNames = GetEnabledProviderNames();
-        HasMultipleProviders = providerNames.Count > 1;
-
-        if (providerNames.Count <= 1) return;
+        if (this.ProviderList.Count <= 1) return;
 
         this._selectedProviderIndex += direction;
 
         if (this._selectedProviderIndex < 0) {
-            this._selectedProviderIndex = providerNames.Count - 1;
-        }
-        else if (this._selectedProviderIndex >= providerNames.Count) {
+            this._selectedProviderIndex = this.ProviderList.Count - 1;
+        } else if (this._selectedProviderIndex >= this.ProviderList.Count) {
             this._selectedProviderIndex = 0;
         }
 
         await RefreshCreditAsync();
     }
 
-    static List<string> GetEnabledProviderNames() {
-        List<string> providerNames = new();
+    void PrepareProviderList() {
+        this.ProviderList.Clear();
 
-        if (App.Settings.UseOpenRouter) {
-            providerNames.Add("OpenRouter");
-        }
+        if (App.Settings.UseOpenRouter) this.ProviderList.Add(new OpenRouterProvider());
+        if (App.Settings.UseChutes) this.ProviderList.Add(new ChutesProvider());
 
-        if (App.Settings.UseChutes) {
-            providerNames.Add("Chutes");
-        }
-
-        return providerNames;
-    }
-
-    void EnsureSelectedProviderIndex(List<string> providerNames) {
-        if (this._selectedProviderIndex < 0 || this._selectedProviderIndex >= providerNames.Count) {
+        if (this._selectedProviderIndex < 0 || this._selectedProviderIndex >= this.ProviderList.Count) 
             this._selectedProviderIndex = 0;
-        }
     }
 
-    async Task<string> GetProviderCreditTextAsync(string providerName) {
-        return providerName switch {
-            "OpenRouter" => await GetOpenRouterCreditTextAsync(),
-            "Chutes" => await GetChutesCreditTextAsync(),
+    async Task<string> GetProviderCreditTextAsync(ILlmProvider provider) {
+        return provider switch {
+            OpenRouterProvider => await GetOpenRouterCreditTextAsync(provider),
+            ChutesProvider => await GetChutesCreditTextAsync(provider),
             _ => "프로바이더 오류"
         };
     }
 
-    async Task<string> GetOpenRouterCreditTextAsync() {
+    async Task<string> GetOpenRouterCreditTextAsync(ILlmProvider provider) {
         if (string.IsNullOrWhiteSpace(App.Settings.OpenRouterApiKey)) {
             return "OpenRouter API 키 필요";
         }
 
         try {
-            var provider = new OpenRouterProvider();
-            ILlmProvider.Balance balance = await provider.GetCurrentBalanceAsync(App.Settings);
+            var balance = await provider.GetCurrentBalanceAsync(App.Settings);
             return $"OpenRouter ${balance.Remain:0.00}";
         }
         catch {
@@ -149,7 +127,7 @@ public class MainWindowVm:INotifyPropertyChanged {
         }
     }
 
-    async Task<string> GetChutesCreditTextAsync() {
+    async Task<string> GetChutesCreditTextAsync(ILlmProvider provider) {
         if (string.IsNullOrWhiteSpace(App.Settings.ChutesApiKey)) {
             return "Chutes API 키 필요";
         }
@@ -159,8 +137,7 @@ public class MainWindowVm:INotifyPropertyChanged {
         }
 
         try {
-            var provider = new ChutesProvider();
-            ILlmProvider.Balance balance = await provider.GetCurrentBalanceAsync(App.Settings);
+            var balance = await provider.GetCurrentBalanceAsync(App.Settings);
             return $"Chutes ${balance.Remain:0.00}";
         }
         catch {
