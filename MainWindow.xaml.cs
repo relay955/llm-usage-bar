@@ -26,7 +26,7 @@ public partial class MainWindow : Window {
 
         PlaceNearTaskbarTray();
         KeepAboveTaskbar();
-        _vm.StartTimer();
+        _vm.Init();
     }
 
     /// <summary>
