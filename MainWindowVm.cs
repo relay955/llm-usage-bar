@@ -140,8 +140,8 @@ public class MainWindowVm:INotifyPropertyChanged {
         }
 
         try {
-            var provider = new OpenRouterProvider(App.Settings.OpenRouterApiKey);
-            ILlmProvider.Balance balance = await provider.GetCurrentBalanceAsync();
+            var provider = new OpenRouterProvider();
+            ILlmProvider.Balance balance = await provider.GetCurrentBalanceAsync(App.Settings);
             return $"OpenRouter ${balance.Remain:0.00}";
         }
         catch {
@@ -159,8 +159,8 @@ public class MainWindowVm:INotifyPropertyChanged {
         }
 
         try {
-            var provider = new ChutesProvider(App.Settings.ChutesApiKey, App.Settings.ChutesUserIdOrUsername);
-            ILlmProvider.Balance balance = await provider.GetCurrentBalanceAsync();
+            var provider = new ChutesProvider();
+            ILlmProvider.Balance balance = await provider.GetCurrentBalanceAsync(App.Settings);
             return $"Chutes ${balance.Remain:0.00}";
         }
         catch {

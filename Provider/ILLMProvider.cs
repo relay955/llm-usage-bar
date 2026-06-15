@@ -1,8 +1,10 @@
-﻿namespace LLMUsageBar.Provider;
+using LLMUsageBar.Module;
+
+namespace LLMUsageBar.Provider;
 
 public interface ILlmProvider {
     Task<Quota> GetCurrentQuotaAsync();
-    Task<Balance> GetCurrentBalanceAsync();
+    Task<Balance> GetCurrentBalanceAsync(AppSettings settings);
     
     public abstract bool HasQuota { get; }
     public abstract bool HasBalance { get; }

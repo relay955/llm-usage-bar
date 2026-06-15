@@ -3,24 +3,15 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using LLMUsageBar.Module;
 
 namespace LLMUsageBar.Provider;
 
-public sealed class OpenRouterProvider : ILlmProvider {
+public sealed class OpenRouterProvider(HttpClient? httpClient = null) : ILlmProvider {
     static readonly Uri CreditsEndpoint = new("https://openrouter.ai/api/v1/credits");
     static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
-    readonly HttpClient _httpClient;
-    readonly string _apiKey;
-
-    public OpenRouterProvider(string apiKey, HttpClient? httpClient = null) {
-        if (string.IsNullOrWhiteSpace(apiKey)) {
-            throw new ArgumentException("OpenRouter API key is required.", nameof(apiKey));
-        }
-
-        this._apiKey = apiKey;
-        this._httpClient = httpClient ?? new HttpClient();
-    }
+    readonly HttpClient _httpClient = httpClient ?? new HttpClient();
 
     public bool HasQuota => false;
     public bool HasBalance => true;
@@ -35,9 +26,13 @@ public sealed class OpenRouterProvider : ILlmProvider {
     /// <summary>
     /// OpenRouter 크레딧 API를 호출해 남은 잔액을 조회합니다.
     /// </summary>
-    public async Task<ILlmProvider.Balance> GetCurrentBalanceAsync() {
+    public async Task<ILlmProvider.Balance> GetCurrentBalanceAsync(AppSettings settings) {
+        if (string.IsNullOrWhiteSpace(settings.OpenRouterApiKey)) {
+            throw new ArgumentException("OpenRouter API key is required.", nameof(settings));
+        }
+
         using HttpRequestMessage request = new(HttpMethod.Get, CreditsEndpoint);
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", this._apiKey);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", settings.OpenRouterApiKey);
 
         using HttpResponseMessage response = await this._httpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
