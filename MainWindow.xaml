@@ -57,10 +57,8 @@
                 </Style.Triggers>
             </Style>
         </Border.Resources>
-        <Grid>
-            <StackPanel Margin="5,0,0,0"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center">
+        <DockPanel>
+            <StackPanel Margin="5,0,0,0" DockPanel.Dock="Left" VerticalAlignment="Center">
                 <Button Width="22"
                         Height="15"
                         Margin="0,0,0,1"
@@ -82,7 +80,21 @@
                     <TextBlock Text="v" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Button>
             </StackPanel>
-            <StackPanel HorizontalAlignment="Center"
+            <Button Width="28"
+                    Height="28"
+                    Margin="0,0,5,0"
+                    Style="{StaticResource HoverSettingsButtonStyle}"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Command="{Binding OpenSettingsCommand}"
+                    CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                    DockPanel.Dock="Right"
+                    ToolTip="설정"
+                    Foreground="#FFFFFFFF"
+                    FontSize="15">
+                <Image Source="Assets/settings.png" Width="18" Height="18" Stretch="Uniform" />
+            </Button>
+            <StackPanel HorizontalAlignment="Left"
                         VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Left"
@@ -105,19 +117,6 @@
                     <Run Text="{Binding CreditText}" />
                 </TextBlock>
             </StackPanel>
-            <Button Width="28"
-                    Height="28"
-                    Margin="0,0,5,0"
-                    Style="{StaticResource HoverSettingsButtonStyle}"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Center"
-                    Command="{Binding OpenSettingsCommand}"
-                    CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
-                    ToolTip="설정"
-                    Foreground="#FFFFFFFF"
-                    FontSize="15">
-                <Image Source="Assets/settings.png" Width="18" Height="18" Stretch="Uniform" />
-            </Button>
-        </Grid>
+        </DockPanel>
     </Border>
 </Window>
