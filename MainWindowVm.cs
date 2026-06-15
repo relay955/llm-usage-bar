@@ -67,7 +67,7 @@ public class MainWindowVm:INotifyPropertyChanged {
     async Task RefreshCreditAsync() {
         if (this._isRefreshing) return;
 
-        List<string> providerNames = GetEnabledProviderNames();
+        var providerNames = GetEnabledProviderNames();
         HasMultipleProviders = providerNames.Count > 1;
 
         if (providerNames.Count == 0) {
@@ -87,7 +87,9 @@ public class MainWindowVm:INotifyPropertyChanged {
     }
 
     async Task ChangeProviderAsync(int direction) {
-        List<string> providerNames = GetEnabledProviderNames();
+        if (this._isRefreshing) return;
+
+        var providerNames = GetEnabledProviderNames();
         HasMultipleProviders = providerNames.Count > 1;
 
         if (providerNames.Count <= 1) return;
