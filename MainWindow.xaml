@@ -35,8 +35,53 @@
                     </DataTrigger>
                 </Style.Triggers>
             </Style>
+            <Style x:Key="HoverProviderButtonStyle"
+                   TargetType="{x:Type Button}"
+                   BasedOn="{StaticResource IconButton}">
+                <Setter Property="Visibility" Value="Hidden" />
+                <Setter Property="Foreground" Value="#FF353535" />
+                <Setter Property="FontSize" Value="10" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Style.Triggers>
+                    <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                            <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Border}}"
+                                       Value="True" />
+                            <Condition Binding="{Binding HasMultipleProviders}"
+                                       Value="True" />
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="Visibility" Value="Visible" />
+                    </MultiDataTrigger>
+                </Style.Triggers>
+            </Style>
         </Border.Resources>
         <Grid>
+            <StackPanel Margin="5,0,0,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center">
+                <Button Width="22"
+                        Height="15"
+                        Margin="0,0,0,1"
+                        Padding="0"
+                        MinWidth="0"
+                        Style="{StaticResource HoverProviderButtonStyle}"
+                        Command="{Binding PreviousProviderCommand}"
+                        ToolTip="이전 프로바이더">
+                    <TextBlock Text="^" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Button>
+                <Button Width="22"
+                        Height="15"
+                        Margin="0,1,0,0"
+                        Padding="0"
+                        MinWidth="0"
+                        Style="{StaticResource HoverProviderButtonStyle}"
+                        Command="{Binding NextProviderCommand}"
+                        ToolTip="다음 프로바이더">
+                    <TextBlock Text="v" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Button>
+            </StackPanel>
             <TextBlock Text="{Binding CreditText}"
                        FontSize="14"
                        FontWeight="SemiBold"
