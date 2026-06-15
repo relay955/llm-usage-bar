@@ -27,23 +27,28 @@ public sealed class ChutesProvider(HttpClient? httpClient = null) : ILlmProvider
     /// </summary>
     public async Task<ILlmProvider.Balance> GetCurrentBalanceAsync(AppSettings settings) {
         if (string.IsNullOrWhiteSpace(settings.ChutesApiKey)) {
-            throw new ArgumentException("Chutes API key is required.", nameof(settings));
+            throw new ArgumentException("No API Key", nameof(settings));
         }
 
         if (string.IsNullOrWhiteSpace(settings.ChutesUserIdOrUsername)) {
-            throw new ArgumentException("Chutes user id or username is required.", nameof(settings));
+            throw new ArgumentException("No user ID", nameof(settings));
         }
 
-        using HttpResponseMessage response = await SendBalanceRequestAsync(settings, useBearerScheme: false);
+        try {
+            using HttpResponseMessage response = await SendBalanceRequestAsync(settings, useBearerScheme: false);
 
-        if (response.StatusCode == HttpStatusCode.Unauthorized) {
-            using HttpResponseMessage bearerResponse = await SendBalanceRequestAsync(settings, useBearerScheme: true);
-            bearerResponse.EnsureSuccessStatusCode();
-            return await ReadBalanceAsync(bearerResponse);
+            if (response.StatusCode == HttpStatusCode.Unauthorized) {
+                using HttpResponseMessage bearerResponse = await SendBalanceRequestAsync(settings, useBearerScheme: true);
+                bearerResponse.EnsureSuccessStatusCode();
+                return await ReadBalanceAsync(bearerResponse);
+            }
+
+            response.EnsureSuccessStatusCode();
+            return await ReadBalanceAsync(response);
         }
-
-        response.EnsureSuccessStatusCode();
-        return await ReadBalanceAsync(response);
+        catch (Exception exception) when (exception is not OperationCanceledException) {
+            throw new InvalidOperationException("Request failed", exception);
+        }
     }
 
     async Task<HttpResponseMessage> SendBalanceRequestAsync(AppSettings settings, bool useBearerScheme) {

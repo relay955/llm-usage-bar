@@ -28,28 +28,33 @@ public sealed class OpenRouterProvider(HttpClient? httpClient = null) : ILlmProv
     /// </summary>
     public async Task<ILlmProvider.Balance> GetCurrentBalanceAsync(AppSettings settings) {
         if (string.IsNullOrWhiteSpace(settings.OpenRouterApiKey)) {
-            throw new ArgumentException("OpenRouter API key is required.", nameof(settings));
+            throw new ArgumentException("No API key", nameof(settings));
         }
 
-        using HttpRequestMessage request = new(HttpMethod.Get, CreditsEndpoint);
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", settings.OpenRouterApiKey);
+        try {
+            using HttpRequestMessage request = new(HttpMethod.Get, CreditsEndpoint);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", settings.OpenRouterApiKey);
 
-        using HttpResponseMessage response = await this._httpClient.SendAsync(request);
-        response.EnsureSuccessStatusCode();
+            using HttpResponseMessage response = await this._httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
 
-        await using Stream responseStream = await response.Content.ReadAsStreamAsync();
-        OpenRouterCreditsResponse? credits = await JsonSerializer.DeserializeAsync<OpenRouterCreditsResponse>(
-            responseStream,
-            JsonOptions
-        );
+            await using Stream responseStream = await response.Content.ReadAsStreamAsync();
+            OpenRouterCreditsResponse? credits = await JsonSerializer.DeserializeAsync<OpenRouterCreditsResponse>(
+                responseStream,
+                JsonOptions
+            );
 
-        if (credits?.Data is null) {
-            throw new InvalidOperationException("OpenRouter credits response did not contain data.");
+            if (credits?.Data is null) {
+                throw new InvalidOperationException("Response empty");
+            }
+
+            return new OpenRouterBalance {
+                Remain = credits.Data.TotalCredits - credits.Data.TotalUsage
+            };
         }
-
-        return new OpenRouterBalance {
-            Remain = credits.Data.TotalCredits - credits.Data.TotalUsage
-        };
+        catch (Exception exception) when (exception is not OperationCanceledException) {
+            throw new InvalidOperationException("Request failed", exception);
+        }
     }
 
     public sealed class OpenRouterBalance : ILlmProvider.Balance;

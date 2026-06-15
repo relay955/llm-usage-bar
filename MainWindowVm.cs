@@ -114,34 +114,12 @@ public class MainWindowVm:INotifyPropertyChanged {
     }
 
     async Task<string> GetOpenRouterCreditTextAsync(ILlmProvider provider) {
-        if (string.IsNullOrWhiteSpace(App.Settings.OpenRouterApiKey)) {
-            return "OpenRouter API 키 필요";
-        }
-
-        try {
-            var balance = await provider.GetCurrentBalanceAsync(App.Settings);
-            return $"OpenRouter ${balance.Remain:0.00}";
-        }
-        catch {
-            return "OpenRouter 조회 실패";
-        }
+        var balance = await provider.GetCurrentBalanceAsync(App.Settings);
+        return $"OpenRouter ${balance.Remain:0.00}";
     }
 
     async Task<string> GetChutesCreditTextAsync(ILlmProvider provider) {
-        if (string.IsNullOrWhiteSpace(App.Settings.ChutesApiKey)) {
-            return "Chutes API 키 필요";
-        }
-
-        if (string.IsNullOrWhiteSpace(App.Settings.ChutesUserIdOrUsername)) {
-            return "Chutes 사용자 필요";
-        }
-
-        try {
-            var balance = await provider.GetCurrentBalanceAsync(App.Settings);
-            return $"Chutes ${balance.Remain:0.00}";
-        }
-        catch {
-            return "Chutes 조회 실패";
-        }
+        var balance = await provider.GetCurrentBalanceAsync(App.Settings);
+        return $"Chutes ${balance.Remain:0.00}";
     }
 }
