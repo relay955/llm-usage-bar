@@ -27,7 +27,7 @@
                   Grid.Column="1"
                   HorizontalAlignment="Left"
                   VerticalAlignment="Center"
-                  IsChecked="{Binding AppSettings.UseOpenRouter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                  IsChecked="{Binding PendingAppSettings.UseOpenRouter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
         <TextBlock Grid.Row="1"
                    Grid.Column="0"
@@ -43,6 +43,6 @@
                  Height="30"
                  VerticalContentAlignment="Center"
                  Padding="8,0"
-                 Text="{Binding AppSettings.OpenRouterApiKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                 Text="{Binding PendingAppSettings.OpenRouterApiKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
     </Grid>
 </UserControl>

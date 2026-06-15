@@ -24,7 +24,7 @@
                  VerticalContentAlignment="Center"
                  HorizontalContentAlignment="Right"
                  Padding="8,0"
-                 Text="{Binding AppSettings.RefreshIntervalMinutes, UpdateSourceTrigger=PropertyChanged}" />
+                 Text="{Binding PendingAppSettings.RefreshIntervalMinutes, UpdateSourceTrigger=PropertyChanged}" />
 
         <TextBlock Grid.Column="2"
                    Text="분"

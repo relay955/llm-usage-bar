@@ -12,27 +12,27 @@ public class SettingsVm:INotifyPropertyChanged {
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public int SelectedTabIndex { get; set; }
-    public AppSettings AppSettings { get; set; }
+    public AppSettings PendingAppSettings { get; set; }
     public string ValidationMessage { get; set; } = "";
 
     public ICommand SaveCommand { get; }
     public ICommand CancelCommand { get; }
 
     public SettingsVm() {
-        AppSettings = AppSettingsStore.Load();
+        PendingAppSettings = AppSettingsStore.Load();
 
         SaveCommand = new Command(OnSave);
         CancelCommand = new Command(OnCancel);
     }
 
     void OnSave(object parameter) {
-        if(AppSettings.RefreshIntervalMinutes <= 0) {
+        if(PendingAppSettings.RefreshIntervalMinutes <= 0) {
             ValidationMessage = "자동갱신 주기는 1 이상의 숫자로 입력해주세요.";
             return;
         }
 
-        AppSettingsStore.Save(AppSettings);
-        App.Settings = AppSettings;
+        AppSettingsStore.Save(PendingAppSettings);
+        App.Settings = PendingAppSettings;
         CloseWindow(parameter as Window, true);
     }
 
