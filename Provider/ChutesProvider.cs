@@ -2,30 +2,15 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
+using LLMUsageBar.Module;
 
 namespace LLMUsageBar.Provider;
 
-public sealed class ChutesProvider : ILlmProvider {
+public sealed class ChutesProvider(HttpClient? httpClient = null) : ILlmProvider {
     static readonly Uri UsersEndpoint = new("https://api.chutes.ai/users/");
     static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
-    readonly HttpClient _httpClient;
-    readonly string _apiKey;
-    readonly string _userIdOrUsername;
-
-    public ChutesProvider(string apiKey, string userIdOrUsername, HttpClient? httpClient = null) {
-        if (string.IsNullOrWhiteSpace(apiKey)) {
-            throw new ArgumentException("Chutes API key is required.", nameof(apiKey));
-        }
-
-        if (string.IsNullOrWhiteSpace(userIdOrUsername)) {
-            throw new ArgumentException("Chutes user id or username is required.", nameof(userIdOrUsername));
-        }
-
-        this._apiKey = apiKey;
-        this._userIdOrUsername = userIdOrUsername;
-        this._httpClient = httpClient ?? new HttpClient();
-    }
+    readonly HttpClient _httpClient = httpClient ?? new HttpClient();
 
     public bool HasQuota => false;
     public bool HasBalance => true;
@@ -40,11 +25,19 @@ public sealed class ChutesProvider : ILlmProvider {
     /// <summary>
     /// Chutes 사용자 잔액 API를 호출해 남은 잔액을 조회합니다.
     /// </summary>
-    public async Task<ILlmProvider.Balance> GetCurrentBalanceAsync() {
-        using HttpResponseMessage response = await SendBalanceRequestAsync(useBearerScheme: false);
+    public async Task<ILlmProvider.Balance> GetCurrentBalanceAsync(AppSettings settings) {
+        if (string.IsNullOrWhiteSpace(settings.ChutesApiKey)) {
+            throw new ArgumentException("Chutes API key is required.", nameof(settings));
+        }
+
+        if (string.IsNullOrWhiteSpace(settings.ChutesUserIdOrUsername)) {
+            throw new ArgumentException("Chutes user id or username is required.", nameof(settings));
+        }
+
+        using HttpResponseMessage response = await SendBalanceRequestAsync(settings, useBearerScheme: false);
 
         if (response.StatusCode == HttpStatusCode.Unauthorized) {
-            using HttpResponseMessage bearerResponse = await SendBalanceRequestAsync(useBearerScheme: true);
+            using HttpResponseMessage bearerResponse = await SendBalanceRequestAsync(settings, useBearerScheme: true);
             bearerResponse.EnsureSuccessStatusCode();
             return await ReadBalanceAsync(bearerResponse);
         }
@@ -53,10 +46,10 @@ public sealed class ChutesProvider : ILlmProvider {
         return await ReadBalanceAsync(response);
     }
 
-    async Task<HttpResponseMessage> SendBalanceRequestAsync(bool useBearerScheme) {
-        Uri balanceEndpoint = new(UsersEndpoint, $"{Uri.EscapeDataString(this._userIdOrUsername)}/balance");
+    async Task<HttpResponseMessage> SendBalanceRequestAsync(AppSettings settings, bool useBearerScheme) {
+        Uri balanceEndpoint = new(UsersEndpoint, $"{Uri.EscapeDataString(settings.ChutesUserIdOrUsername)}/balance");
         using HttpRequestMessage request = new(HttpMethod.Get, balanceEndpoint);
-        string authorizationValue = useBearerScheme ? $"Bearer {this._apiKey}" : this._apiKey;
+        string authorizationValue = useBearerScheme ? $"Bearer {settings.ChutesApiKey}" : settings.ChutesApiKey;
         request.Headers.TryAddWithoutValidation("Authorization", authorizationValue);
 
         return await this._httpClient.SendAsync(request);
