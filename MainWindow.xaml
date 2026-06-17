@@ -113,7 +113,6 @@
                            FontWeight="SemiBold"
                            Foreground="#353535"
                            HorizontalAlignment="Left">
-                    <Run Text="Credits : " />
                     <Run Text="{Binding CreditText}" />
                 </TextBlock>
             </StackPanel>
