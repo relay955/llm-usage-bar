@@ -11,6 +11,8 @@ namespace LLMUsageBar.Module;
 public sealed class AppSettings:INotifyPropertyChanged {
     public event PropertyChangedEventHandler? PropertyChanged;
     public int RefreshIntervalMinutes { get; set; }
+    public bool UseCodex { get; set; }
+    public string CodexAuthJsonPath { get; set; } = AppSettingsStore.DefaultCodexAuthJsonPath;
     public bool UseOpenRouter { get; set; }
     public string OpenRouterApiKey { get; set; } = "";
     public bool UseChutes { get; set; }
@@ -20,6 +22,8 @@ public sealed class AppSettings:INotifyPropertyChanged {
 public static class AppSettingsStore {
     private const string SettingsFileName = "settings.toml";
     private const string RefreshIntervalKey = "refresh_interval_minutes";
+    private const string UseCodexKey = "useCodex";
+    private const string CodexAuthJsonPathKey = "CodexAuthJsonPath";
     private const string UseOpenRouterKey = "useOpenRouter";
     private const string OpenRouterApiKeyKey = "OpenRouterApiKey";
     private const string UseChutesKey = "useChutes";
@@ -32,6 +36,9 @@ public static class AppSettingsStore {
         }
     }
 
+    public static string DefaultCodexAuthJsonPath =>
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".codex", "auth.json");
+
     public static AppSettings Load() {
         if (!File.Exists(SettingsFilePath)) {
             return new AppSettings();
@@ -42,6 +49,8 @@ public static class AppSettingsStore {
 
         return new AppSettings {
             RefreshIntervalMinutes = ReadPositiveInt(table, RefreshIntervalKey, 10),
+            UseCodex = ReadBool(table, UseCodexKey, false),
+            CodexAuthJsonPath = ReadString(table, CodexAuthJsonPathKey, DefaultCodexAuthJsonPath),
             UseOpenRouter = ReadBool(table, UseOpenRouterKey, false),
             OpenRouterApiKey = ReadString(table, OpenRouterApiKeyKey, ""),
             UseChutes = ReadBool(table, UseChutesKey, false),
@@ -54,6 +63,8 @@ public static class AppSettingsStore {
 
         var table = new TomlTable {
             [RefreshIntervalKey] = Math.Max(1, settings.RefreshIntervalMinutes),
+            [UseCodexKey] = settings.UseCodex,
+            [CodexAuthJsonPathKey] = settings.CodexAuthJsonPath,
             [UseOpenRouterKey] = settings.UseOpenRouter,
             [OpenRouterApiKeyKey] = settings.OpenRouterApiKey,
             [UseChutesKey] = settings.UseChutes,

@@ -84,8 +84,13 @@ public class MainWindowVm:INotifyPropertyChanged {
         try {
             var selectedProvider = this._providerList[this._selectedProviderIndex];
             ProviderName = selectedProvider.Name;
-            var balance = await selectedProvider.GetCurrentBalanceAsync(App.Settings);
-            CreditText = $"${balance.Remain:0.00}";
+            if (selectedProvider.HasQuota) {
+                var quota = await selectedProvider.GetCurrentQuotaAsync();
+                CreditText = $"5h {quota.Daily:0.#}% / W {quota.Weekly:0.#}%";
+            } else {
+                var balance = await selectedProvider.GetCurrentBalanceAsync(App.Settings);
+                CreditText = $"${balance.Remain:0.00}";
+            }
         } catch(Exception e) {
             ErrorMessage = e.Message;
             CreditText = "-";
@@ -114,6 +119,7 @@ public class MainWindowVm:INotifyPropertyChanged {
 
         if (App.Settings.UseOpenRouter) this._providerList.Add(new OpenRouterProvider());
         if (App.Settings.UseChutes) this._providerList.Add(new ChutesProvider());
+        if (App.Settings.UseCodex) this._providerList.Add(new CodexProvider());
 
         if (this._selectedProviderIndex < 0 || this._selectedProviderIndex >= this._providerList.Count) 
             this._selectedProviderIndex = 0;
