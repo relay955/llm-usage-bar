@@ -125,11 +125,18 @@
                 <DataTrigger Binding="{Binding SelectedTabIndex}" Value="1">
                     <Setter Property="Content">
                         <Setter.Value>
-                            <local:OpenRouterSettingsControl />
+                            <local:CodexSettingsControl />
                         </Setter.Value>
                     </Setter>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding SelectedTabIndex}" Value="2">
+                    <Setter Property="Content">
+                        <Setter.Value>
+                            <local:OpenRouterSettingsControl />
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding SelectedTabIndex}" Value="3">
                     <Setter Property="Content">
                         <Setter.Value>
                             <local:ChutesSettingsControl />
@@ -199,6 +206,7 @@
                      Style="{StaticResource SettingsNavListBoxStyle}"
                      ItemContainerStyle="{StaticResource SettingsNavListBoxItemStyle}">
                 <ListBoxItem Content="General" />
+                <ListBoxItem Content="Codex" />
                 <ListBoxItem Content="Openrouter" />
                 <ListBoxItem Content="Chutes" />
             </ListBox>
