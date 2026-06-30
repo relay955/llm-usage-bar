@@ -12,6 +12,7 @@
 
             <util:NonZeroToVisibilityConverter x:Key="NonZeroToVisibilityConverter" />
             <util:DoubleToPercentConverter x:Key="RatioToPercentConverter" />
+            <util:BalanceTextConverter x:Key="BalanceTextConverter" />
             
             <FontFamily x:Key="NotoSansKr">applicaton:,,,/Assets/#Noto Sans KR</FontFamily>
 
