@@ -33,12 +33,16 @@ public class MainWindowVm:INotifyPropertyChanged {
     public bool HasMultipleProviders => this._providerList.Count > 1;
 
     public ICommand OpenSettingsCommand { get; }
+    public ICommand ManualRefreshCommand { get; }
     public ICommand PreviousProviderCommand { get; }
     public ICommand NextProviderCommand { get; }
     
     public MainWindowVm() {
         OpenSettingsCommand = new Command(async void (owner) => {
             await OpenSettingsAsync(owner as Window);
+        });
+        ManualRefreshCommand = new Command(async void (_) => {
+            await RefreshCreditAsync();
         });
         PreviousProviderCommand = new Command(async void (_) => {
             await ChangeProviderAsync(-1);
