@@ -109,39 +109,37 @@
                                FontWeight="SemiBold"
                                Foreground="#C0392B" />
                 </StackPanel>
-                <DockPanel>
-                    <TextBlock FontSize="14"
+                <TextBlock FontSize="14"
+                           FontWeight="SemiBold"
+                           DockPanel.Dock="Left"
+                           VerticalAlignment="Center"
+                           Foreground="#353535">
+                    <Run Text="{Binding CreditText}" />
+                </TextBlock>
+                <Grid VerticalAlignment="Center"
+                      Margin="6,0,0,0"
+                      DockPanel.Dock="Right"
+                      Visibility="{Binding MaxBalance, Converter={StaticResource NonZeroToVisibilityConverter}}">
+                    <Border
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        BorderThickness="2"
+                        BorderBrush="#CDCDCD" >
+                    <ProgressBar Height="14"
+                                 Width="100"
+                                 Value="{Binding BalanceRatio, Converter={StaticResource RatioToPercentConverter}}"
+                                 Foreground="#FFFFFF"
+                                 Background="#CDCDCD"/>
+                    </Border>
+                    <TextBlock FontSize="11"
                                FontWeight="SemiBold"
-                               DockPanel.Dock="Left"
                                VerticalAlignment="Center"
-                               Foreground="#353535">
-                        <Run Text="{Binding CreditText}" />
+                               HorizontalAlignment="Center"
+                               Foreground="#353535"
+                               Margin="0,0,0,1">
+                        <Run Text="{Binding BalanceRatio, Converter={StaticResource RatioToPercentConverter}, StringFormat={}{0:F0}%}" />
                     </TextBlock>
-                    <Grid VerticalAlignment="Center"
-                          Margin="6,0,0,0"
-                          DockPanel.Dock="Right"
-                          Visibility="{Binding MaxBalance, Converter={StaticResource NonZeroToVisibilityConverter}}">
-                        <Border
-                            VerticalAlignment="Center"
-                            HorizontalAlignment="Center"
-                            BorderThickness="2"
-                            BorderBrush="#CDCDCD" >
-                        <ProgressBar Height="14"
-                                     Width="100"
-                                     Value="{Binding BalanceRatio, Converter={StaticResource RatioToPercentConverter}}"
-                                     Foreground="#FFFFFF"
-                                     Background="#CDCDCD"/>
-                        </Border>
-                        <TextBlock FontSize="12"
-                                   FontWeight="SemiBold"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"
-                                   Foreground="#353535"
-                                   Margin="0,0,0,1">
-                            <Run Text="{Binding BalanceRatio, Converter={StaticResource RatioToPercentConverter}, StringFormat={}{0:F0}%}" />
-                        </TextBlock>
-                    </Grid>
-                </DockPanel>
+                </Grid>
             </StackPanel>
         </DockPanel>
     </Border>
