@@ -109,12 +109,26 @@
                                FontWeight="SemiBold"
                                Foreground="#C0392B" />
                 </StackPanel>
-                <TextBlock FontSize="14"
-                           FontWeight="SemiBold"
-                           Foreground="#353535"
-                           HorizontalAlignment="Left">
-                    <Run Text="{Binding CreditText}" />
-                </TextBlock>
+                <DockPanel>
+                    <TextBlock FontSize="14"
+                               FontWeight="SemiBold"
+                               DockPanel.Dock="Left"
+                               VerticalAlignment="Center"
+                               Foreground="#353535">
+                        <Run Text="{Binding CreditText}" />
+                    </TextBlock>
+                    <ProgressBar Height="14"
+                                 DockPanel.Dock="Right"
+                                 VerticalAlignment="Center"
+                                 Width="100"
+                                 Margin="6,0,0,0"
+                                 Visibility="{Binding MaxBalance, Converter={StaticResource NonZeroToVisibilityConverter}}"
+                                 Value="{Binding BalanceRatio, Converter={StaticResource RatioToPercentConverter}}"
+                                 Foreground="#FFFFFF"
+                                 Background="#CDCDCD"
+                                 BorderThickness="3"
+                                 BorderBrush="#CDCDCD" />
+                </DockPanel>
             </StackPanel>
         </DockPanel>
     </Border>

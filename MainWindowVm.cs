@@ -21,6 +21,8 @@ public class MainWindowVm:INotifyPropertyChanged {
     public string ProviderName { get; set; } = "";
     public string ErrorMessage { get; set; } = "";
     public string CreditText { get; set; } = "조회 중...";
+    public double MaxBalance { get; set; } = 0;
+    public double BalanceRatio { get; set; } = 0;
     public bool HasMultipleProviders => this._providerList.Count > 1;
 
     public ICommand OpenSettingsCommand { get; }
@@ -89,11 +91,9 @@ public class MainWindowVm:INotifyPropertyChanged {
                 CreditText = $"5h {quota.Short:0.#}% / W {quota.Long:0.#}%";
             } else {
                 var balance = await selectedProvider.GetCurrentBalanceAsync(App.Settings);
-                if (balance.Max > 0) {
-                    CreditText = $"${balance.Remain:0.00} / ${balance.Max:0.00}";
-                } else {
-                    CreditText = $"${balance.Remain:0.00}";
-                }
+                this.MaxBalance = balance.Max;
+                this.BalanceRatio = balance.Max > 0 ? balance.Remain / balance.Max : 0;
+                CreditText = $"${balance.Remain:0.00}";
             }
         } catch(Exception e) {
             ErrorMessage = e.Message;
