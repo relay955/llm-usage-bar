@@ -15,7 +15,6 @@ public sealed class ChutesProvider(HttpClient? httpClient = null) : ILlmProvider
     static readonly Uri BalanceEndpoint = new("https://chutes.ai/api/dashboard/balance");
     static readonly JsonSerializerOptions JsonSerializeOptions = new(JsonSerializerDefaults.Web);
 
-    readonly HttpClient _httpClient = httpClient ?? new HttpClient();
     readonly CookieContainer _cookieContainer = new();
     bool _isAuthenticated;
 
