@@ -19,7 +19,8 @@ public sealed class ChutesProvider(HttpClient? httpClient = null) : ILlmProvider
     bool _isAuthenticated;
 
     public string Name => "Chutes";
-    public bool HasQuota => false;
+    public bool HasShortQuota => false;
+    public bool HasLongQuota => false;
     public bool HasBalance => true;
 
     /// <summary>

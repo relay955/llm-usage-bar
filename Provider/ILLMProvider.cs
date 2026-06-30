@@ -7,12 +7,13 @@ public interface ILlmProvider {
     Task<Balance> GetCurrentBalanceAsync(AppSettings settings);
     
     public abstract string Name { get; }
-    public abstract bool HasQuota { get; }
+    public abstract bool HasShortQuota { get; }
+    public abstract bool HasLongQuota { get; }
     public abstract bool HasBalance { get; }
     
     public abstract class Quota {
-        public double Daily { get; set; }
-        public double Weekly { get; set; }
+        public double Short { get; set; }
+        public double Long { get; set; }
     }
     
     public abstract class Balance {

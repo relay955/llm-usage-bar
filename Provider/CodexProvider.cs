@@ -20,7 +20,8 @@ public sealed class CodexProvider(HttpClient? httpClient = null) : ILlmProvider 
     readonly HttpClient _httpClient = httpClient ?? new HttpClient();
 
     public string Name => "Codex";
-    public bool HasQuota => true;
+    public bool HasShortQuota => true;
+    public bool HasLongQuota => true;
     public bool HasBalance => false;
 
     /// <summary>
@@ -54,8 +55,8 @@ public sealed class CodexProvider(HttpClient? httpClient = null) : ILlmProvider 
             }
 
             return new CodexQuota {
-                Daily = RemainingPercent(primaryWindow),
-                Weekly = usage?.RateLimit?.SecondaryWindow is null ? 0 : RemainingPercent(usage.RateLimit.SecondaryWindow)
+                Short = RemainingPercent(primaryWindow),
+                Long = usage?.RateLimit?.SecondaryWindow is null ? 0 : RemainingPercent(usage.RateLimit.SecondaryWindow)
             };
         }
         catch (Exception exception) when (exception is InvalidOperationException or FileNotFoundException) {

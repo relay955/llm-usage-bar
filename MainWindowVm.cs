@@ -84,9 +84,9 @@ public class MainWindowVm:INotifyPropertyChanged {
         try {
             var selectedProvider = this._providerList[this._selectedProviderIndex];
             ProviderName = selectedProvider.Name;
-            if (selectedProvider.HasQuota) {
+            if (selectedProvider.HasShortQuota && selectedProvider.HasLongQuota) {
                 var quota = await selectedProvider.GetCurrentQuotaAsync();
-                CreditText = $"5h {quota.Daily:0.#}% / W {quota.Weekly:0.#}%";
+                CreditText = $"5h {quota.Short:0.#}% / W {quota.Long:0.#}%";
             } else {
                 var balance = await selectedProvider.GetCurrentBalanceAsync(App.Settings);
                 CreditText = $"${balance.Remain:0.00}";
