@@ -14,8 +14,7 @@ public sealed class AppSettings:INotifyPropertyChanged {
     public bool UseOpenRouter { get; set; }
     public string OpenRouterApiKey { get; set; } = "";
     public bool UseChutes { get; set; }
-    public string ChutesApiKey { get; set; } = "";
-    public string ChutesUserIdOrUsername { get; set; } = "";
+    public string ChutesFingerprint { get; set; } = "";
 }
 
 public static class AppSettingsStore {
@@ -24,8 +23,7 @@ public static class AppSettingsStore {
     private const string UseOpenRouterKey = "useOpenRouter";
     private const string OpenRouterApiKeyKey = "OpenRouterApiKey";
     private const string UseChutesKey = "useChutes";
-    private const string ChutesApiKeyKey = "ChutesApiKey";
-    private const string ChutesUserIdOrUsernameKey = "ChutesUserIdOrUsername";
+    private const string ChutesFingerprintKey = "ChutesFingerprint";
 
     public static string SettingsFilePath {
         get {
@@ -47,8 +45,7 @@ public static class AppSettingsStore {
             UseOpenRouter = ReadBool(table, UseOpenRouterKey, false),
             OpenRouterApiKey = ReadString(table, OpenRouterApiKeyKey, ""),
             UseChutes = ReadBool(table, UseChutesKey, false),
-            ChutesApiKey = ReadString(table, ChutesApiKeyKey, ""),
-            ChutesUserIdOrUsername = ReadString(table, ChutesUserIdOrUsernameKey, "")
+            ChutesFingerprint = ReadString(table, ChutesFingerprintKey, "")
         };
     }
 
@@ -60,8 +57,7 @@ public static class AppSettingsStore {
             [UseOpenRouterKey] = settings.UseOpenRouter,
             [OpenRouterApiKeyKey] = settings.OpenRouterApiKey,
             [UseChutesKey] = settings.UseChutes,
-            [ChutesApiKeyKey] = settings.ChutesApiKey,
-            [ChutesUserIdOrUsernameKey] = settings.ChutesUserIdOrUsername
+            [ChutesFingerprintKey] = settings.ChutesFingerprint
         };
 
         File.WriteAllText(SettingsFilePath, TomlSerializer.Serialize(table), Encoding.UTF8);

@@ -33,7 +33,7 @@
         <TextBlock Grid.Row="1"
                    Grid.Column="0"
                    Margin="0,16,0,0"
-                   Text="API Key"
+                   Text="Fingerprint"
                    Foreground="#FFE8E8E8"
                    FontSize="13"
                    VerticalAlignment="Center" />
@@ -44,22 +44,6 @@
                  Height="30"
                  VerticalContentAlignment="Center"
                  Padding="8,0"
-                 Text="{Binding PendingAppSettings.ChutesApiKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-
-        <TextBlock Grid.Row="2"
-                   Grid.Column="0"
-                   Margin="0,16,0,0"
-                   Text="User ID / Username"
-                   Foreground="#FFE8E8E8"
-                   FontSize="13"
-                   VerticalAlignment="Center" />
-
-        <TextBox Grid.Row="2"
-                 Grid.Column="1"
-                 Margin="0,16,0,0"
-                 Height="30"
-                 VerticalContentAlignment="Center"
-                 Padding="8,0"
-                 Text="{Binding PendingAppSettings.ChutesUserIdOrUsername, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                 Text="{Binding PendingAppSettings.ChutesFingerprint, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
     </Grid>
 </UserControl>
