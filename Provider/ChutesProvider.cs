@@ -45,7 +45,7 @@ public sealed class ChutesProvider(HttpClient? httpClient = null) : ILlmProvider
             if (_isAuthenticated) {
                 using var response = await SendBalanceRequestWithCookieAsync();
                 if (response.IsSuccessStatusCode) {
-                    return await ReadBalanceAsync(response);
+                    return await ReadBalanceAsync(response, settings.ChutesMaxBalance);
                 }
                 // balance API 실패 → 쿠키 만료 등으로 간주하고 재로그인
                 _isAuthenticated = false;
@@ -59,7 +59,7 @@ public sealed class ChutesProvider(HttpClient? httpClient = null) : ILlmProvider
 
             using var response2 = await SendBalanceRequestWithCookieAsync();
             response2.EnsureSuccessStatusCode();
-            return await ReadBalanceAsync(response2);
+            return await ReadBalanceAsync(response2, settings.ChutesMaxBalance);
         }
         catch (Exception exception) when (exception is not OperationCanceledException) {
             await Console.Out.WriteLineAsync(exception.Message);
@@ -105,13 +105,14 @@ public sealed class ChutesProvider(HttpClient? httpClient = null) : ILlmProvider
     /// <summary>
     /// balance API 응답에서 잔액 값을 파싱합니다.
     /// </summary>
-    static async Task<ILlmProvider.Balance> ReadBalanceAsync(HttpResponseMessage response) {
+    static async Task<ILlmProvider.Balance> ReadBalanceAsync(HttpResponseMessage response, double maxBalance) {
         await using Stream responseStream = await response.Content.ReadAsStreamAsync();
         using JsonDocument document = await JsonDocument.ParseAsync(responseStream);
 
         double remain = ReadBalanceFromDocument(document.RootElement);
         return new ChutesBalance {
-            Remain = remain
+            Remain = remain,
+            Max = maxBalance
         };
     }
 
