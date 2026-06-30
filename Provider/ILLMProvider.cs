@@ -18,6 +18,7 @@ public interface ILlmProvider {
     
     public abstract class Balance {
         public double Remain { get; set; }
+        public double Max { get; set; }
     }
 }
 

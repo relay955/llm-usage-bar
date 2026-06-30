@@ -50,7 +50,8 @@ public sealed class OpenRouterProvider(HttpClient? httpClient = null) : ILlmProv
             }
 
             return new OpenRouterBalance {
-                Remain = credits.Data.TotalCredits - credits.Data.TotalUsage
+                Remain = credits.Data.TotalCredits - credits.Data.TotalUsage,
+                Max = settings.OpenRouterMaxBalance
             };
         }
         catch (Exception exception) when (exception is not OperationCanceledException) {

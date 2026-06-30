@@ -17,6 +17,8 @@ public sealed class AppSettings:INotifyPropertyChanged {
     public string OpenRouterApiKey { get; set; } = "";
     public bool UseChutes { get; set; }
     public string ChutesFingerprint { get; set; } = "";
+    public double ChutesMaxBalance { get; set; }
+    public double OpenRouterMaxBalance { get; set; }
 }
 
 public static class AppSettingsStore {
@@ -28,6 +30,8 @@ public static class AppSettingsStore {
     private const string OpenRouterApiKeyKey = "OpenRouterApiKey";
     private const string UseChutesKey = "useChutes";
     private const string ChutesFingerprintKey = "ChutesFingerprint";
+    private const string ChutesMaxBalanceKey = "ChutesMaxBalance";
+    private const string OpenRouterMaxBalanceKey = "OpenRouterMaxBalance";
 
     public static string SettingsFilePath {
         get {
@@ -54,7 +58,9 @@ public static class AppSettingsStore {
             UseOpenRouter = ReadBool(table, UseOpenRouterKey, false),
             OpenRouterApiKey = ReadString(table, OpenRouterApiKeyKey, ""),
             UseChutes = ReadBool(table, UseChutesKey, false),
-            ChutesFingerprint = ReadString(table, ChutesFingerprintKey, "")
+            ChutesFingerprint = ReadString(table, ChutesFingerprintKey, ""),
+            ChutesMaxBalance = ReadDouble(table, ChutesMaxBalanceKey, 0),
+            OpenRouterMaxBalance = ReadDouble(table, OpenRouterMaxBalanceKey, 0)
         };
     }
 
@@ -68,7 +74,9 @@ public static class AppSettingsStore {
             [UseOpenRouterKey] = settings.UseOpenRouter,
             [OpenRouterApiKeyKey] = settings.OpenRouterApiKey,
             [UseChutesKey] = settings.UseChutes,
-            [ChutesFingerprintKey] = settings.ChutesFingerprint
+            [ChutesFingerprintKey] = settings.ChutesFingerprint,
+            [ChutesMaxBalanceKey] = settings.ChutesMaxBalance,
+            [OpenRouterMaxBalanceKey] = settings.OpenRouterMaxBalance
         };
 
         File.WriteAllText(SettingsFilePath, TomlSerializer.Serialize(table), Encoding.UTF8);
@@ -102,5 +110,20 @@ public static class AppSettingsStore {
         }
 
         return value is string stringValue ? stringValue : defaultValue;
+    }
+
+    private static double ReadDouble(TomlTable table, string key, double defaultValue) {
+        if (!table.TryGetValue(key, out object? value)) {
+            return defaultValue;
+        }
+
+        return value switch {
+            double doubleValue => doubleValue,
+            float floatValue => (double)floatValue,
+            int intValue => intValue,
+            long longValue => longValue,
+            string stringValue when double.TryParse(stringValue, out double parsed) => parsed,
+            _ => defaultValue
+        };
     }
 }
