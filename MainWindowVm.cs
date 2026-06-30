@@ -23,6 +23,13 @@ public class MainWindowVm:INotifyPropertyChanged {
     public string CreditText { get; set; } = "조회 중...";
     public double MaxBalance { get; set; } = 0;
     public double BalanceRatio { get; set; } = 0;
+    public bool HasBalanceDisplay { get; set; }
+    public bool HasDualQuota { get; set; }
+    public bool ShowCreditText { get; set; } = true;
+    public double HourlyQuotaRatio { get; set; } = 0;
+    public double WeeklyQuotaRatio { get; set; } = 0;
+    public string HourlyQuotaText { get; set; } = "";
+    public string WeeklyQuotaText { get; set; } = "";
     public bool HasMultipleProviders => this._providerList.Count > 1;
 
     public ICommand OpenSettingsCommand { get; }
@@ -77,11 +84,14 @@ public class MainWindowVm:INotifyPropertyChanged {
             ProviderName = "";
             ErrorMessage = "프로바이더 미사용";
             CreditText = "-";
+            ClearUsageDisplay();
+            ShowCreditText = true;
             return;
         }
 
         this._isRefreshing = true;
         ErrorMessage = "";
+        ClearUsageDisplay();
 
         try {
             var selectedProvider = this._providerList[this._selectedProviderIndex];
@@ -89,15 +99,25 @@ public class MainWindowVm:INotifyPropertyChanged {
             if (selectedProvider.HasShortQuota && selectedProvider.HasLongQuota) {
                 var quota = await selectedProvider.GetCurrentQuotaAsync();
                 CreditText = $"5h {quota.Short:0.#}% / W {quota.Long:0.#}%";
+                HasDualQuota = true;
+                ShowCreditText = false;
+                HourlyQuotaRatio = quota.Short / 100;
+                WeeklyQuotaRatio = quota.Long / 100;
+                HourlyQuotaText = $"{quota.Short:0.#}%";
+                WeeklyQuotaText = $"{quota.Long:0.#}%";
             } else {
                 var balance = await selectedProvider.GetCurrentBalanceAsync(App.Settings);
                 this.MaxBalance = balance.Max;
                 this.BalanceRatio = balance.Max > 0 ? balance.Remain / balance.Max : 0;
                 CreditText = $"${balance.Remain:0.00}";
+                HasBalanceDisplay = balance.Max > 0;
+                ShowCreditText = !HasBalanceDisplay;
             }
         } catch(Exception e) {
             ErrorMessage = e.Message;
             CreditText = "-";
+            ClearUsageDisplay();
+            ShowCreditText = true;
         } finally {
             this._isRefreshing = false;
         }
@@ -131,5 +151,16 @@ public class MainWindowVm:INotifyPropertyChanged {
         ProviderName = this._providerList.Count == 0
             ? ""
             : this._providerList[this._selectedProviderIndex].Name;
+    }
+
+    void ClearUsageDisplay() {
+        MaxBalance = 0;
+        BalanceRatio = 0;
+        HasBalanceDisplay = false;
+        HasDualQuota = false;
+        HourlyQuotaRatio = 0;
+        WeeklyQuotaRatio = 0;
+        HourlyQuotaText = "";
+        WeeklyQuotaText = "";
     }
 }
