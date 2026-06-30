@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="LLMUsageBar"
         Width="230"
-        Height="40"
+        Height="48"
         WindowStyle="None"
         ResizeMode="NoResize"
         AllowsTransparency="True"
@@ -16,6 +16,7 @@
         ShowInTaskbar="False">
     <Window.Resources>
         <local:MainWindowVm x:Key="Vm" />
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </Window.Resources>
     <Window.DataContext>
         <Binding Source="{StaticResource Vm}" />
@@ -109,16 +110,20 @@
                                FontWeight="SemiBold"
                                Foreground="#C0392B" />
                 </StackPanel>
+                
+                <!-- balance provider - no max balance (single text) -->
                 <TextBlock FontSize="14"
                            FontWeight="SemiBold"
                            DockPanel.Dock="Left"
                            VerticalAlignment="Center"
                            Foreground="#353535"
-                           Visibility="{Binding MaxBalance, Converter={StaticResource NonZeroToVisibilityConverter}, ConverterParameter=Invert}">
+                           Visibility="{Binding ShowCreditText, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <Run Text="{Binding CreditText}" />
                 </TextBlock>
+                
+                <!-- balance provider - using max balance (progress bar)  -->
                 <Grid VerticalAlignment="Center"
-                      Visibility="{Binding MaxBalance, Converter={StaticResource NonZeroToVisibilityConverter}}">
+                      Visibility="{Binding HasBalanceDisplay, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <Border
                         VerticalAlignment="Center"
                         HorizontalAlignment="Center"
@@ -146,6 +151,71 @@
                         </Run>
                     </TextBlock>
                 </Grid>
+                
+                <!-- dual quota provider -->
+                <StackPanel VerticalAlignment="Center"
+                            Visibility="{Binding HasDualQuota, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid Margin="0,0,0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="36" />
+                            <ColumnDefinition Width="100" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="hourly"
+                                   FontSize="9"
+                                   FontWeight="SemiBold"
+                                   Foreground="#555555"
+                                   VerticalAlignment="Center" />
+                        <Grid Grid.Column="1">
+                            <Border
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Center"
+                                BorderThickness="1"
+                                BorderBrush="#CDCDCD" >
+                                <ProgressBar Height="9"
+                                             Width="100"
+                                             Value="{Binding HourlyQuotaRatio, Converter={StaticResource RatioToPercentConverter}}"
+                                             Foreground="#FFFFFF"
+                                             Background="#CDCDCD"/>
+                            </Border>
+                            <TextBlock Text="{Binding HourlyQuotaText}"
+                                       FontSize="8"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"
+                                       Foreground="#353535" />
+                        </Grid>
+                    </Grid>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="36" />
+                            <ColumnDefinition Width="100" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="weekly"
+                                   FontSize="9"
+                                   FontWeight="SemiBold"
+                                   Foreground="#555555"
+                                   VerticalAlignment="Center" />
+                        <Grid Grid.Column="1">
+                            <Border
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Center"
+                                BorderThickness="1"
+                                BorderBrush="#CDCDCD" >
+                                <ProgressBar Height="9"
+                                             Width="100"
+                                             Value="{Binding WeeklyQuotaRatio, Converter={StaticResource RatioToPercentConverter}}"
+                                             Foreground="#FFFFFF"
+                                             Background="#CDCDCD"/>
+                            </Border>
+                            <TextBlock Text="{Binding WeeklyQuotaText}"
+                                       FontSize="8"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"
+                                       Foreground="#353535" />
+                        </Grid>
+                    </Grid>
+                </StackPanel>
             </StackPanel>
         </DockPanel>
     </Border>
