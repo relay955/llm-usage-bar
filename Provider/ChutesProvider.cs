@@ -17,6 +17,7 @@ public sealed class ChutesProvider(HttpClient? httpClient = null) : ILlmProvider
 
     readonly HttpClient _httpClient = httpClient ?? new HttpClient();
     readonly CookieContainer _cookieContainer = new();
+    bool _isAuthenticated;
 
     public string Name => "Chutes";
     public bool HasQuota => false;
@@ -31,7 +32,8 @@ public sealed class ChutesProvider(HttpClient? httpClient = null) : ILlmProvider
 
     /// <summary>
     /// Chutes 사용자 잔액 API를 호출해 남은 잔액을 조회합니다.
-    /// fingerprint로 로그인한 후 쿠키를 사용하여 balance API를 호출합니다.
+    /// 이전에 로그인되어 쿠키가 유효하면 재로그인 없이 바로 잔액을 조회합니다.
+    /// 쿠키가 없거나 balance API 호출이 실패하면 fingerprint로 재로그인합니다.
     /// </summary>
     public async Task<ILlmProvider.Balance> GetCurrentBalanceAsync(AppSettings settings) {
         if (string.IsNullOrWhiteSpace(settings.ChutesFingerprint)) {
@@ -39,16 +41,29 @@ public sealed class ChutesProvider(HttpClient? httpClient = null) : ILlmProvider
         }
 
         try {
-            // 1. fingerprint로 로그인하여 쿠키 획득
-            await LoginAsync(settings.ChutesFingerprint);
+            // 이미 인증된 상태면 바로 balance API 호출 시도
+            if (_isAuthenticated) {
+                using var response = await SendBalanceRequestWithCookieAsync();
+                if (response.IsSuccessStatusCode) {
+                    return await ReadBalanceAsync(response);
+                }
+                // balance API 실패 → 쿠키 만료 등으로 간주하고 재로그인
+                _isAuthenticated = false;
+            }
 
-            // 2. 쿠키를 사용하여 잔액 조회
-            using var response = await SendBalanceRequestWithCookieAsync();
-            response.EnsureSuccessStatusCode();
-            return await ReadBalanceAsync(response);
+            // 로그인 및 balance API 호출
+            if (!_isAuthenticated) {
+                await LoginAsync(settings.ChutesFingerprint);
+                _isAuthenticated = true;
+            }
+
+            using var response2 = await SendBalanceRequestWithCookieAsync();
+            response2.EnsureSuccessStatusCode();
+            return await ReadBalanceAsync(response2);
         }
         catch (Exception exception) when (exception is not OperationCanceledException) {
             await Console.Out.WriteLineAsync(exception.Message);
+            _isAuthenticated = false;
             throw new InvalidOperationException("Request failed", exception);
         }
     }
