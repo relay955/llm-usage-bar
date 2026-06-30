@@ -95,6 +95,18 @@
                     FontSize="15">
                 <Image Source="Assets/settings.png" Width="18" Height="18" Stretch="Uniform" />
             </Button>
+            <Button Width="28"
+                    Height="28"
+                    Margin="0,0,2,0"
+                    Style="{StaticResource HoverSettingsButtonStyle}"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Command="{Binding ManualRefreshCommand}"
+                    DockPanel.Dock="Right"
+                    ToolTip="수동갱신"
+                    Foreground="#FFFFFFFF">
+                <Image Source="Assets/refresh.png" Width="18" Height="18" Stretch="Uniform" />
+            </Button>
             <StackPanel HorizontalAlignment="Left"
                         VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal"
