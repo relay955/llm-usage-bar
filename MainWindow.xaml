@@ -117,17 +117,30 @@
                                Foreground="#353535">
                         <Run Text="{Binding CreditText}" />
                     </TextBlock>
-                    <ProgressBar Height="14"
-                                 DockPanel.Dock="Right"
-                                 VerticalAlignment="Center"
-                                 Width="100"
-                                 Margin="6,0,0,0"
-                                 Visibility="{Binding MaxBalance, Converter={StaticResource NonZeroToVisibilityConverter}}"
-                                 Value="{Binding BalanceRatio, Converter={StaticResource RatioToPercentConverter}}"
-                                 Foreground="#FFFFFF"
-                                 Background="#CDCDCD"
-                                 BorderThickness="3"
-                                 BorderBrush="#CDCDCD" />
+                    <Grid VerticalAlignment="Center"
+                          Margin="6,0,0,0"
+                          DockPanel.Dock="Right"
+                          Visibility="{Binding MaxBalance, Converter={StaticResource NonZeroToVisibilityConverter}}">
+                        <Border
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center"
+                            BorderThickness="2"
+                            BorderBrush="#CDCDCD" >
+                        <ProgressBar Height="14"
+                                     Width="100"
+                                     Value="{Binding BalanceRatio, Converter={StaticResource RatioToPercentConverter}}"
+                                     Foreground="#FFFFFF"
+                                     Background="#CDCDCD"/>
+                        </Border>
+                        <TextBlock FontSize="12"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   Foreground="#353535"
+                                   Margin="0,0,0,1">
+                            <Run Text="{Binding BalanceRatio, Converter={StaticResource RatioToPercentConverter}, StringFormat={}{0:F0}%}" />
+                        </TextBlock>
+                    </Grid>
                 </DockPanel>
             </StackPanel>
         </DockPanel>
