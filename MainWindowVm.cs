@@ -100,15 +100,23 @@ public class MainWindowVm:INotifyPropertyChanged {
         try {
             var selectedProvider = this._providerList[this._selectedProviderIndex];
             ProviderName = selectedProvider.Name;
-            if (selectedProvider.HasShortQuota && selectedProvider.HasLongQuota) {
+            if (selectedProvider.HasShortQuota || selectedProvider.HasLongQuota) {
                 var quota = await selectedProvider.GetCurrentQuotaAsync();
-                CreditText = $"5h {quota.Short:0.#}% / W {quota.Long:0.#}%";
-                HasDualQuota = true;
-                ShowCreditText = false;
-                HourlyQuotaRatio = quota.Short / 100;
-                WeeklyQuotaRatio = quota.Long / 100;
-                HourlyQuotaText = $"{quota.Short:0.#}%";
-                WeeklyQuotaText = $"{quota.Long:0.#}%";
+                if (selectedProvider.HasShortQuota && selectedProvider.HasLongQuota) {
+                    CreditText = $"5h {quota.Short:0.#}% / W {quota.Long:0.#}%";
+                    HasDualQuota = true;
+                    ShowCreditText = false;
+                    HourlyQuotaRatio = quota.Short / 100;
+                    WeeklyQuotaRatio = quota.Long / 100;
+                    HourlyQuotaText = $"{quota.Short:0.#}%";
+                    WeeklyQuotaText = $"{quota.Long:0.#}%";
+                } else if (selectedProvider.HasShortQuota) {
+                    CreditText = $"{quota.Short:0.#}%";
+                    ShowCreditText = true;
+                } else {
+                    CreditText = $"{quota.Long:0.#}%";
+                    ShowCreditText = true;
+                }
             } else {
                 var balance = await selectedProvider.GetCurrentBalanceAsync(App.Settings);
                 this.MaxBalance = balance.Max;
@@ -148,6 +156,7 @@ public class MainWindowVm:INotifyPropertyChanged {
         if (App.Settings.UseOpenRouter) this._providerList.Add(new OpenRouterProvider());
         if (App.Settings.UseChutes) this._providerList.Add(new ChutesProvider());
         if (App.Settings.UseCodex) this._providerList.Add(new CodexProvider());
+        if (App.Settings.UseOllamaCloud) this._providerList.Add(new OllamaCloudProvider());
 
         if (this._selectedProviderIndex < 0 || this._selectedProviderIndex >= this._providerList.Count) 
             this._selectedProviderIndex = 0;

@@ -143,6 +143,13 @@
                         </Setter.Value>
                     </Setter>
                 </DataTrigger>
+                <DataTrigger Binding="{Binding SelectedTabIndex}" Value="4">
+                    <Setter Property="Content">
+                        <Setter.Value>
+                            <local:OllamaCloudSettingsControl />
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
             </Style.Triggers>
         </Style>
     </Window.Resources>
@@ -209,6 +216,7 @@
                 <ListBoxItem Content="Codex" />
                 <ListBoxItem Content="Openrouter" />
                 <ListBoxItem Content="Chutes" />
+                <ListBoxItem Content="Ollama Cloud" />
             </ListBox>
         </Border>
 
