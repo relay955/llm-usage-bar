@@ -217,6 +217,7 @@
                 <ListBoxItem Content="Openrouter" />
                 <ListBoxItem Content="Chutes" />
                 <ListBoxItem Content="Ollama Cloud" />
+                <ListBoxItem Content="Antigravity" />
             </ListBox>
         </Border>
 
