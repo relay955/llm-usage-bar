@@ -9,6 +9,8 @@ public interface ILlmProvider {
     public abstract string Name { get; }
     public abstract bool HasShortQuota { get; }
     public abstract bool HasLongQuota { get; }
+    public string ShortQuotaLabel => "";
+    public string LongQuotaLabel => "";
     public abstract bool HasBalance { get; }
     
     public abstract class Quota {
@@ -21,4 +23,3 @@ public interface ILlmProvider {
         public double Max { get; set; }
     }
 }
-

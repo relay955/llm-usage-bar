@@ -28,6 +28,8 @@ public class MainWindowVm:INotifyPropertyChanged {
     public bool ShowCreditText { get; set; } = true;
     public double HourlyQuotaRatio { get; set; } = 0;
     public double WeeklyQuotaRatio { get; set; } = 0;
+    public string ShortQuotaLabel { get; set; } = "hourly";
+    public string LongQuotaLabel { get; set; } = "weekly";
     public string HourlyQuotaText { get; set; } = "";
     public string WeeklyQuotaText { get; set; } = "";
     public bool HasMultipleProviders => this._providerList.Count > 1;
@@ -103,7 +105,9 @@ public class MainWindowVm:INotifyPropertyChanged {
             if (selectedProvider.HasShortQuota || selectedProvider.HasLongQuota) {
                 var quota = await selectedProvider.GetCurrentQuotaAsync();
                 if (selectedProvider.HasShortQuota && selectedProvider.HasLongQuota) {
-                    CreditText = $"5h {quota.Short:0.#}% / W {quota.Long:0.#}%";
+                    ShortQuotaLabel = selectedProvider.ShortQuotaLabel;
+                    LongQuotaLabel = selectedProvider.LongQuotaLabel;
+                    CreditText = $"{ShortQuotaLabel} {quota.Short:0.#}% / {LongQuotaLabel} {quota.Long:0.#}%";
                     HasDualQuota = true;
                     ShowCreditText = false;
                     HourlyQuotaRatio = quota.Short / 100;
@@ -171,6 +175,8 @@ public class MainWindowVm:INotifyPropertyChanged {
         BalanceRatio = 0;
         HasBalanceDisplay = false;
         HasDualQuota = false;
+        ShortQuotaLabel = "hourly";
+        LongQuotaLabel = "weekly";
         HourlyQuotaRatio = 0;
         WeeklyQuotaRatio = 0;
         HourlyQuotaText = "";

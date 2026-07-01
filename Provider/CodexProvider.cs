@@ -22,6 +22,8 @@ public sealed class CodexProvider(HttpClient? httpClient = null) : ILlmProvider 
     public string Name => "Codex";
     public bool HasShortQuota => true;
     public bool HasLongQuota => true;
+    public string ShortQuotaLabel => "hourly";
+    public string LongQuotaLabel => "weekly";
     public bool HasBalance => false;
 
     /// <summary>

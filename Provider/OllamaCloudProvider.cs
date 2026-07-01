@@ -26,6 +26,8 @@ public sealed class OllamaCloudProvider(HttpClient? httpClient = null) : ILlmPro
     public string Name => "Ollama Cloud";
     public bool HasShortQuota => true;
     public bool HasLongQuota => true;
+    public string ShortQuotaLabel => "session";
+    public string LongQuotaLabel => "weekly";
     public bool HasBalance => false;
 
     /// <summary>

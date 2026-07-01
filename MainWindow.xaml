@@ -172,7 +172,7 @@
                             <ColumnDefinition Width="36" />
                             <ColumnDefinition Width="100" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Text="hourly"
+                        <TextBlock Text="{Binding ShortQuotaLabel}"
                                    FontSize="9"
                                    FontWeight="SemiBold"
                                    Foreground="#555555"
@@ -202,7 +202,7 @@
                             <ColumnDefinition Width="36" />
                             <ColumnDefinition Width="100" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Text="weekly"
+                        <TextBlock Text="{Binding LongQuotaLabel}"
                                    FontSize="9"
                                    FontWeight="SemiBold"
                                    Foreground="#555555"
