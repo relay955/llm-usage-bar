@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
@@ -19,6 +20,7 @@ public class MainWindowVm:INotifyPropertyChanged {
     int _selectedProviderIndex;
 
     public string ProviderName { get; set; } = "";
+    public string ProviderQuotaUrl { get; set; } = "";
     public string ErrorMessage { get; set; } = "";
     public string CreditText { get; set; } = "조회 중...";
     public double MaxBalance { get; set; } = 0;
@@ -35,6 +37,7 @@ public class MainWindowVm:INotifyPropertyChanged {
     public bool HasMultipleProviders => this._providerList.Count > 1;
 
     public ICommand OpenSettingsCommand { get; }
+    public ICommand OpenProviderQuotaCommand { get; }
     public ICommand ManualRefreshCommand { get; }
     public ICommand PreviousProviderCommand { get; }
     public ICommand NextProviderCommand { get; }
@@ -42,6 +45,9 @@ public class MainWindowVm:INotifyPropertyChanged {
     public MainWindowVm() {
         OpenSettingsCommand = new Command(async void (owner) => {
             await OpenSettingsAsync(owner as Window);
+        });
+        OpenProviderQuotaCommand = new Command(_ => {
+            OpenProviderQuotaUrl();
         });
         ManualRefreshCommand = new Command(async void (_) => {
             await RefreshCreditAsync();
@@ -88,6 +94,7 @@ public class MainWindowVm:INotifyPropertyChanged {
 
         if (this._providerList.Count == 0) {
             ProviderName = "";
+            ProviderQuotaUrl = "";
             ErrorMessage = "프로바이더 미사용";
             CreditText = "-";
             ClearUsageDisplay();
@@ -102,6 +109,7 @@ public class MainWindowVm:INotifyPropertyChanged {
         try {
             var selectedProvider = this._providerList[this._selectedProviderIndex];
             ProviderName = selectedProvider.Name;
+            ProviderQuotaUrl = selectedProvider.QuotaUrl;
             if (selectedProvider.HasShortQuota || selectedProvider.HasLongQuota) {
                 var quota = await selectedProvider.GetCurrentQuotaAsync();
                 if (selectedProvider.HasShortQuota && selectedProvider.HasLongQuota) {
@@ -168,6 +176,21 @@ public class MainWindowVm:INotifyPropertyChanged {
         ProviderName = this._providerList.Count == 0
             ? ""
             : this._providerList[this._selectedProviderIndex].Name;
+        ProviderQuotaUrl = this._providerList.Count == 0
+            ? ""
+            : this._providerList[this._selectedProviderIndex].QuotaUrl;
+    }
+
+    void OpenProviderQuotaUrl() {
+        if (string.IsNullOrWhiteSpace(ProviderQuotaUrl)) return;
+
+        try {
+            Process.Start(new ProcessStartInfo(ProviderQuotaUrl) {
+                UseShellExecute = true
+            });
+        } catch (Exception exception) {
+            ErrorMessage = exception.Message;
+        }
     }
 
     void ClearUsageDisplay() {

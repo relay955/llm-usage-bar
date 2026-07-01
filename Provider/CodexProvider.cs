@@ -20,6 +20,7 @@ public sealed class CodexProvider(HttpClient? httpClient = null) : ILlmProvider 
     readonly HttpClient _httpClient = httpClient ?? new HttpClient();
 
     public string Name => "Codex";
+    public string QuotaUrl => "https://chatgpt.com/codex/settings/usage";
     public bool HasShortQuota => true;
     public bool HasLongQuota => true;
     public string ShortQuotaLabel => "hourly";

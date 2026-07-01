@@ -7,6 +7,7 @@ public interface ILlmProvider {
     Task<Balance> GetCurrentBalanceAsync(AppSettings settings);
     
     public abstract string Name { get; }
+    public abstract string QuotaUrl { get; }
     public abstract bool HasShortQuota { get; }
     public abstract bool HasLongQuota { get; }
     public string ShortQuotaLabel => "";
