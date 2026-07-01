@@ -19,6 +19,7 @@ public sealed class ChutesProvider(HttpClient? httpClient = null) : ILlmProvider
     bool _isAuthenticated;
 
     public string Name => "Chutes";
+    public string QuotaUrl => "https://chutes.ai/app/settings/api-keys";
     public bool HasShortQuota => false;
     public bool HasLongQuota => false;
     public bool HasBalance => true;

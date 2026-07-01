@@ -57,6 +57,24 @@
                     </MultiDataTrigger>
                 </Style.Triggers>
             </Style>
+            <Style x:Key="ProviderNameButtonStyle"
+                   TargetType="{x:Type Button}">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="MinWidth" Value="0" />
+                <Setter Property="HorizontalContentAlignment" Value="Left" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
         </Border.Resources>
         <DockPanel>
             <StackPanel Margin="5,0,5,0" DockPanel.Dock="Left" VerticalAlignment="Center">
@@ -112,10 +130,14 @@
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Left"
                             Margin="0,0,0,1">
-                    <TextBlock Text="{Binding ProviderName}"
-                               FontSize="9"
-                               FontWeight="SemiBold"
-                               Foreground="#777777" />
+                    <Button Style="{StaticResource ProviderNameButtonStyle}"
+                            Command="{Binding OpenProviderQuotaCommand}"
+                            ToolTip="{Binding ProviderQuotaUrl}">
+                        <TextBlock Text="{Binding ProviderName}"
+                                   FontSize="9"
+                                   FontWeight="SemiBold"
+                                   Foreground="#777777" />
+                    </Button>
                     <TextBlock Text="{Binding ErrorMessage}"
                                Margin="6,0,0,0"
                                FontSize="9"

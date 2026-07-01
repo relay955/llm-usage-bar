@@ -24,6 +24,7 @@ public sealed class OllamaCloudProvider(HttpClient? httpClient = null) : ILlmPro
     });
 
     public string Name => "Ollama Cloud";
+    public string QuotaUrl => "https://ollama.com/settings";
     public bool HasShortQuota => true;
     public bool HasLongQuota => true;
     public string ShortQuotaLabel => "session";
