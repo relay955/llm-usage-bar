@@ -159,7 +159,15 @@ public class MainWindowVm:INotifyPropertyChanged {
             this._selectedProviderIndex = 0;
         }
 
+        SaveSelectedProvider();
         await RefreshCreditAsync();
+    }
+
+    void SaveSelectedProvider() {
+        if (this._providerList.Count == 0) return;
+
+        App.Settings.SelectedProviderName = this._providerList[this._selectedProviderIndex].Name;
+        AppSettingsStore.Save(App.Settings);
     }
 
     void PrepareProviderList() {
@@ -173,12 +181,22 @@ public class MainWindowVm:INotifyPropertyChanged {
         if (this._selectedProviderIndex < 0 || this._selectedProviderIndex >= this._providerList.Count) 
             this._selectedProviderIndex = 0;
 
+        int savedProviderIndex = this._providerList.FindIndex(provider =>
+            string.Equals(provider.Name, App.Settings.SelectedProviderName, StringComparison.Ordinal));
+        if (savedProviderIndex >= 0) {
+            this._selectedProviderIndex = savedProviderIndex;
+        }
+
         ProviderName = this._providerList.Count == 0
             ? ""
             : this._providerList[this._selectedProviderIndex].Name;
         ProviderQuotaUrl = this._providerList.Count == 0
             ? ""
             : this._providerList[this._selectedProviderIndex].QuotaUrl;
+
+        if (this._providerList.Count > 0) {
+            SaveSelectedProvider();
+        }
     }
 
     void OpenProviderQuotaUrl() {

@@ -22,6 +22,7 @@ public sealed class AppSettings:INotifyPropertyChanged {
     public double OpenRouterMaxBalance { get; set; }
     public bool UseOllamaCloud { get; set; }
     public string OllamaCloudSessionCookie { get; set; } = "";
+    public string SelectedProviderName { get; set; } = "";
 }
 
 public static class AppSettingsStore {
@@ -38,6 +39,7 @@ public static class AppSettingsStore {
     private const string OpenRouterMaxBalanceKey = "OpenRouterMaxBalance";
     private const string UseOllamaCloudKey = "useOllamaCloud";
     private const string OllamaCloudSessionCookieKey = "session_cookie";
+    private const string SelectedProviderNameKey = "selected_provider_name";
 
     public static string SettingsFilePath {
         get {
@@ -69,7 +71,8 @@ public static class AppSettingsStore {
             ChutesMaxBalance = ReadDouble(table, ChutesMaxBalanceKey, 0),
             OpenRouterMaxBalance = ReadDouble(table, OpenRouterMaxBalanceKey, 0),
             UseOllamaCloud = ReadBool(table, UseOllamaCloudKey, false),
-            OllamaCloudSessionCookie = ReadString(table, OllamaCloudSessionCookieKey, "")
+            OllamaCloudSessionCookie = ReadString(table, OllamaCloudSessionCookieKey, ""),
+            SelectedProviderName = ReadString(table, SelectedProviderNameKey, "")
         };
     }
 
@@ -88,7 +91,8 @@ public static class AppSettingsStore {
             [ChutesMaxBalanceKey] = settings.ChutesMaxBalance,
             [OpenRouterMaxBalanceKey] = settings.OpenRouterMaxBalance,
             [UseOllamaCloudKey] = settings.UseOllamaCloud,
-            [OllamaCloudSessionCookieKey] = settings.OllamaCloudSessionCookie
+            [OllamaCloudSessionCookieKey] = settings.OllamaCloudSessionCookie,
+            [SelectedProviderNameKey] = settings.SelectedProviderName
         };
 
         File.WriteAllText(SettingsFilePath, TomlSerializer.Serialize(table), Encoding.UTF8);
