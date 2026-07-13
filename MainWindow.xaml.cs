@@ -88,5 +88,11 @@ public partial class MainWindow : Window {
         Topmost = true;
     }
 
+    void DragHandle_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e) {
+        if (e.ButtonState != System.Windows.Input.MouseButtonState.Pressed) return;
+
+        DragMove();
+    }
+
     void OnClosed(object? sender, EventArgs e) => this._vm.StopTimer();
 }

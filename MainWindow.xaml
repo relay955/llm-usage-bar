@@ -75,9 +75,23 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+            <Style x:Key="WindowDragHandleStyle"
+                   TargetType="{x:Type Polygon}">
+                <Setter Property="Visibility" Value="Hidden" />
+                <Setter Property="Fill" Value="#FF000000" />
+                <Setter Property="Cursor" Value="SizeAll" />
+                <Setter Property="Panel.ZIndex" Value="10" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Border}}"
+                                 Value="True">
+                        <Setter Property="Visibility" Value="Visible" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
         </Border.Resources>
-        <DockPanel>
-            <StackPanel Margin="5,0,5,0" DockPanel.Dock="Left" VerticalAlignment="Center">
+        <Grid>
+            <DockPanel>
+                <StackPanel Margin="5,0,5,0" DockPanel.Dock="Left" VerticalAlignment="Center">
                 <Button Width="15"
                         Height="15"
                         Margin="0,0,0,1"
@@ -98,8 +112,8 @@
                         ToolTip="다음 프로바이더">
                     <Image Source="Assets/arrow-down.png" Width="10" Height="10" Stretch="Uniform" />
                 </Button>
-            </StackPanel>
-            <Button Width="28"
+                </StackPanel>
+                <Button Width="28"
                     Height="28"
                     Margin="0,0,5,0"
                     Style="{StaticResource HoverSettingsButtonStyle}"
@@ -124,8 +138,8 @@
                     ToolTip="수동갱신"
                     Foreground="#FFFFFFFF">
                 <Image Source="Assets/refresh.png" Width="18" Height="18" Stretch="Uniform" />
-            </Button>
-            <StackPanel HorizontalAlignment="Left"
+                </Button>
+                <StackPanel HorizontalAlignment="Left"
                         VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Left"
@@ -250,7 +264,16 @@
                         </Grid>
                     </Grid>
                 </StackPanel>
-            </StackPanel>
-        </DockPanel>
+                </StackPanel>
+            </DockPanel>
+            <Polygon Style="{StaticResource WindowDragHandleStyle}"
+                     Width="12"
+                     Height="12"
+                     HorizontalAlignment="Right"
+                     VerticalAlignment="Top"
+                     Points="0,0 12,0 12,12"
+                     MouseLeftButtonDown="DragHandle_MouseLeftButtonDown"
+                     ToolTip="창 이동" />
+        </Grid>
     </Border>
 </Window>
