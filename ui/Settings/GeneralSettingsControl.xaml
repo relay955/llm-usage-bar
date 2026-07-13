@@ -4,9 +4,13 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
-             d:DesignHeight="80"
+             d:DesignHeight="120"
              d:DesignWidth="520">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="96" />
@@ -32,5 +36,13 @@
                    Foreground="#FFE8E8E8"
                    FontSize="13"
                    VerticalAlignment="Center" />
+
+        <CheckBox Grid.Row="1"
+                  Grid.ColumnSpan="3"
+                  Margin="0,20,0,0"
+                  Content="프로그램 시작시 자동실행"
+                  Foreground="#FFE8E8E8"
+                  FontSize="13"
+                  IsChecked="{Binding PendingAppSettings.RunAtStartup, Mode=TwoWay}" />
     </Grid>
 </UserControl>

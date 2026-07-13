@@ -31,7 +31,14 @@ public class SettingsVm:INotifyPropertyChanged {
             return;
         }
 
-        AppSettingsStore.Save(PendingAppSettings);
+        try {
+            StartupManager.Apply(PendingAppSettings.RunAtStartup);
+            AppSettingsStore.Save(PendingAppSettings);
+        } catch (Exception exception) {
+            ValidationMessage = $"자동 실행 설정을 저장하지 못했습니다: {exception.Message}";
+            return;
+        }
+
         App.Settings = PendingAppSettings;
         CloseWindow(parameter as Window, true);
     }
