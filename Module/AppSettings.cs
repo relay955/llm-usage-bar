@@ -11,6 +11,7 @@ namespace LLMUsageBar.Module;
 public sealed class AppSettings:INotifyPropertyChanged {
     public event PropertyChangedEventHandler? PropertyChanged;
     public int RefreshIntervalMinutes { get; set; }
+    public bool RunAtStartup { get; set; }
     public bool UseCodex { get; set; }
     public string CodexAuthJsonPath { get; set; } = AppSettingsStore.DefaultCodexAuthJsonPath;
     public bool UseOpenRouter { get; set; }
@@ -26,6 +27,7 @@ public sealed class AppSettings:INotifyPropertyChanged {
 public static class AppSettingsStore {
     private const string SettingsFileName = "settings.toml";
     private const string RefreshIntervalKey = "refresh_interval_minutes";
+    private const string RunAtStartupKey = "run_at_startup";
     private const string UseCodexKey = "useCodex";
     private const string CodexAuthJsonPathKey = "CodexAuthJsonPath";
     private const string UseOpenRouterKey = "useOpenRouter";
@@ -57,6 +59,7 @@ public static class AppSettingsStore {
 
         return new AppSettings {
             RefreshIntervalMinutes = ReadPositiveInt(table, RefreshIntervalKey, 10),
+            RunAtStartup = ReadBool(table, RunAtStartupKey, false),
             UseCodex = ReadBool(table, UseCodexKey, false),
             CodexAuthJsonPath = ReadString(table, CodexAuthJsonPathKey, DefaultCodexAuthJsonPath),
             UseOpenRouter = ReadBool(table, UseOpenRouterKey, false),
@@ -75,6 +78,7 @@ public static class AppSettingsStore {
 
         var table = new TomlTable {
             [RefreshIntervalKey] = Math.Max(1, settings.RefreshIntervalMinutes),
+            [RunAtStartupKey] = settings.RunAtStartup,
             [UseCodexKey] = settings.UseCodex,
             [CodexAuthJsonPathKey] = settings.CodexAuthJsonPath,
             [UseOpenRouterKey] = settings.UseOpenRouter,
