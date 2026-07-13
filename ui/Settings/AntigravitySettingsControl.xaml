@@ -1,0 +1,40 @@
+<UserControl x:Class="LLMUsageBar.ui.AntigravitySettingsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="120"
+             d:DesignWidth="520">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="260" />
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Grid.Row="0"
+                   Grid.Column="0"
+                   Text="Antigravity 사용"
+                   Foreground="#FFE8E8E8"
+                   FontSize="13"
+                   VerticalAlignment="Center" />
+
+        <CheckBox Grid.Row="0"
+                  Grid.Column="1"
+                  HorizontalAlignment="Left"
+                  VerticalAlignment="Center"
+                  IsChecked="{Binding PendingAppSettings.UseAntigravity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+        <TextBlock Grid.Row="1"
+                   Grid.ColumnSpan="2"
+                   Margin="0,16,0,0"
+                   Text="실행 중인 Antigravity의 로컬 language server에서 할당량을 조회합니다."
+                   Foreground="#FF9CA3AF"
+                   FontSize="12"
+                   TextWrapping="Wrap" />
+    </Grid>
+</UserControl>

@@ -150,6 +150,13 @@
                         </Setter.Value>
                     </Setter>
                 </DataTrigger>
+                <DataTrigger Binding="{Binding SelectedTabIndex}" Value="5">
+                    <Setter Property="Content">
+                        <Setter.Value>
+                            <local:AntigravitySettingsControl />
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
             </Style.Triggers>
         </Style>
     </Window.Resources>

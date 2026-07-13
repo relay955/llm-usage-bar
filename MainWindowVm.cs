@@ -176,6 +176,7 @@ public class MainWindowVm:INotifyPropertyChanged {
         if (App.Settings.UseOpenRouter) this._providerList.Add(new OpenRouterProvider());
         if (App.Settings.UseChutes) this._providerList.Add(new ChutesProvider());
         if (App.Settings.UseCodex) this._providerList.Add(new CodexProvider());
+        if (App.Settings.UseAntigravity) this._providerList.Add(new AntigravityProvider());
         if (App.Settings.UseOllamaCloud) this._providerList.Add(new OllamaCloudProvider());
 
         if (this._selectedProviderIndex < 0 || this._selectedProviderIndex >= this._providerList.Count) 

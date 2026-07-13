@@ -14,6 +14,7 @@ public sealed class AppSettings:INotifyPropertyChanged {
     public bool RunAtStartup { get; set; }
     public bool UseCodex { get; set; }
     public string CodexAuthJsonPath { get; set; } = AppSettingsStore.DefaultCodexAuthJsonPath;
+    public bool UseAntigravity { get; set; }
     public bool UseOpenRouter { get; set; }
     public string OpenRouterApiKey { get; set; } = "";
     public bool UseChutes { get; set; }
@@ -31,6 +32,7 @@ public static class AppSettingsStore {
     private const string RunAtStartupKey = "run_at_startup";
     private const string UseCodexKey = "useCodex";
     private const string CodexAuthJsonPathKey = "CodexAuthJsonPath";
+    private const string UseAntigravityKey = "useAntigravity";
     private const string UseOpenRouterKey = "useOpenRouter";
     private const string OpenRouterApiKeyKey = "OpenRouterApiKey";
     private const string UseChutesKey = "useChutes";
@@ -64,6 +66,7 @@ public static class AppSettingsStore {
             RunAtStartup = ReadBool(table, RunAtStartupKey, false),
             UseCodex = ReadBool(table, UseCodexKey, false),
             CodexAuthJsonPath = ReadString(table, CodexAuthJsonPathKey, DefaultCodexAuthJsonPath),
+            UseAntigravity = ReadBool(table, UseAntigravityKey, false),
             UseOpenRouter = ReadBool(table, UseOpenRouterKey, false),
             OpenRouterApiKey = ReadString(table, OpenRouterApiKeyKey, ""),
             UseChutes = ReadBool(table, UseChutesKey, false),
@@ -84,6 +87,7 @@ public static class AppSettingsStore {
             [RunAtStartupKey] = settings.RunAtStartup,
             [UseCodexKey] = settings.UseCodex,
             [CodexAuthJsonPathKey] = settings.CodexAuthJsonPath,
+            [UseAntigravityKey] = settings.UseAntigravity,
             [UseOpenRouterKey] = settings.UseOpenRouter,
             [OpenRouterApiKeyKey] = settings.OpenRouterApiKey,
             [UseChutesKey] = settings.UseChutes,
