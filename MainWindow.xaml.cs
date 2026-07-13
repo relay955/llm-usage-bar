@@ -3,6 +3,8 @@ using System.Windows.Interop;
 using System.Runtime.InteropServices;
 using System.Windows.Threading;
 
+using LLMUsageBar.Module;
+
 namespace LLMUsageBar;
 
 public partial class MainWindow : Window {
@@ -12,6 +14,7 @@ public partial class MainWindow : Window {
 
     readonly MainWindowVm _vm;
     readonly DispatcherTimer _topmostTimer = new();
+    bool _isPositionInitialized;
 
     public MainWindow() {
         InitializeComponent();
@@ -24,9 +27,29 @@ public partial class MainWindow : Window {
     void OnLoaded(object sender, RoutedEventArgs e) {
         Width = TargetWidth;
 
-        PlaceNearTaskbarTray();
+        RestorePositionOrPlaceNearTaskbarTray();
+        _isPositionInitialized = true;
         KeepAboveTaskbar();
         _vm.Init();
+    }
+
+    void RestorePositionOrPlaceNearTaskbarTray() {
+        if (App.Settings.WindowLeft is double left &&
+            App.Settings.WindowTop is double top &&
+            IsPositionVisible(left, top)) {
+            Left = left;
+            Top = top;
+            return;
+        }
+
+        PlaceNearTaskbarTray();
+    }
+
+    static bool IsPositionVisible(double left, double top) {
+        return left < SystemParameters.VirtualScreenLeft + SystemParameters.VirtualScreenWidth &&
+               left + TargetWidth > SystemParameters.VirtualScreenLeft &&
+               top < SystemParameters.VirtualScreenTop + SystemParameters.VirtualScreenHeight &&
+               top + DefaultTaskbarHeight > SystemParameters.VirtualScreenTop;
     }
 
     /// <summary>
@@ -92,7 +115,19 @@ public partial class MainWindow : Window {
         if (e.ButtonState != System.Windows.Input.MouseButtonState.Pressed) return;
 
         DragMove();
+        SaveWindowPosition();
     }
 
-    void OnClosed(object? sender, EventArgs e) => this._vm.StopTimer();
+    void SaveWindowPosition() {
+        if (!_isPositionInitialized || double.IsNaN(Left) || double.IsNaN(Top)) return;
+
+        App.Settings.WindowLeft = Left;
+        App.Settings.WindowTop = Top;
+        AppSettingsStore.Save(App.Settings);
+    }
+
+    void OnClosed(object? sender, EventArgs e) {
+        SaveWindowPosition();
+        _vm.StopTimer();
+    }
 }

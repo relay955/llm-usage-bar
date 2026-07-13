@@ -24,6 +24,8 @@ public sealed class AppSettings:INotifyPropertyChanged {
     public bool UseOllamaCloud { get; set; }
     public string OllamaCloudSessionCookie { get; set; } = "";
     public string SelectedProviderName { get; set; } = "";
+    public double? WindowLeft { get; set; }
+    public double? WindowTop { get; set; }
 }
 
 public static class AppSettingsStore {
@@ -42,6 +44,8 @@ public static class AppSettingsStore {
     private const string UseOllamaCloudKey = "useOllamaCloud";
     private const string OllamaCloudSessionCookieKey = "session_cookie";
     private const string SelectedProviderNameKey = "selected_provider_name";
+    private const string WindowLeftKey = "window_left";
+    private const string WindowTopKey = "window_top";
 
     public static string SettingsFilePath {
         get {
@@ -75,7 +79,9 @@ public static class AppSettingsStore {
             OpenRouterMaxBalance = ReadDouble(table, OpenRouterMaxBalanceKey, 0),
             UseOllamaCloud = ReadBool(table, UseOllamaCloudKey, false),
             OllamaCloudSessionCookie = ReadString(table, OllamaCloudSessionCookieKey, ""),
-            SelectedProviderName = ReadString(table, SelectedProviderNameKey, "")
+            SelectedProviderName = ReadString(table, SelectedProviderNameKey, ""),
+            WindowLeft = ReadNullableDouble(table, WindowLeftKey),
+            WindowTop = ReadNullableDouble(table, WindowTopKey)
         };
     }
 
@@ -98,6 +104,9 @@ public static class AppSettingsStore {
             [OllamaCloudSessionCookieKey] = settings.OllamaCloudSessionCookie,
             [SelectedProviderNameKey] = settings.SelectedProviderName
         };
+
+        if (settings.WindowLeft.HasValue) table[WindowLeftKey] = settings.WindowLeft.Value;
+        if (settings.WindowTop.HasValue) table[WindowTopKey] = settings.WindowTop.Value;
 
         File.WriteAllText(SettingsFilePath, TomlSerializer.Serialize(table), Encoding.UTF8);
     }
@@ -144,6 +153,21 @@ public static class AppSettingsStore {
             long longValue => longValue,
             string stringValue when double.TryParse(stringValue, out double parsed) => parsed,
             _ => defaultValue
+        };
+    }
+
+    static double? ReadNullableDouble(TomlTable table, string key) {
+        if (!table.TryGetValue(key, out object? value)) {
+            return null;
+        }
+
+        return value switch {
+            double doubleValue => doubleValue,
+            float floatValue => floatValue,
+            int intValue => intValue,
+            long longValue => longValue,
+            string stringValue when double.TryParse(stringValue, out double parsed) => parsed,
+            _ => null
         };
     }
 }
