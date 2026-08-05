@@ -17,7 +17,7 @@
         ShowInTaskbar="False">
     <Window.Resources>
         <local:MainWindowVm x:Key="Vm" />
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <util:UiModeToVisibilityConverter x:Key="UiModeToVisibilityConverter" />
     </Window.Resources>
     <Window.DataContext>
         <Binding Source="{StaticResource Vm}" />
@@ -166,23 +166,17 @@
                            DockPanel.Dock="Left"
                            VerticalAlignment="Center"
                            Foreground="#353535"
-                           Visibility="{Binding ShowCreditText, Converter={StaticResource BooleanToVisibilityConverter}}">
+                           Visibility="{Binding CurrentMode, Converter={StaticResource UiModeToVisibilityConverter}, ConverterParameter=BalanceWithoutMax}">
                     <Run Text="{Binding CreditText}" />
                 </TextBlock>
                 
                 <!-- single quota gauge bar (e.g. OpenRouter) -->
                 <StackPanel VerticalAlignment="Center">
-                    <StackPanel.Style>
-                        <Style TargetType="{x:Type StackPanel}">
-                            <Setter Property="Visibility" Value="Collapsed" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding CurrentMode}"
-                                             Value="{x:Static local:UiMode.SingleQouta}">
-                                    <Setter Property="Visibility" Value="Visible" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </StackPanel.Style>
+                    <StackPanel.Visibility>
+                        <Binding Path="CurrentMode"
+                                 Converter="{StaticResource UiModeToVisibilityConverter}"
+                                 ConverterParameter="SingleQouta" />
+                    </StackPanel.Visibility>
                     <Grid Margin="0,0,0,2">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="36" />
@@ -217,22 +211,11 @@
 
                 <!-- balance provider - using max balance (progress bar)  -->
                 <Grid VerticalAlignment="Center">
-                    <Grid.Style>
-                        <Style TargetType="{x:Type Grid}">
-                            <Setter Property="Visibility" Value="Collapsed" />
-                            <Style.Triggers>
-                                <MultiDataTrigger>
-                                    <MultiDataTrigger.Conditions>
-                                        <Condition Binding="{Binding CurrentMode}"
-                                                   Value="{x:Static local:UiMode.Balance}" />
-                                        <Condition Binding="{Binding ShowCreditText}"
-                                                   Value="False" />
-                                    </MultiDataTrigger.Conditions>
-                                    <Setter Property="Visibility" Value="Visible" />
-                                </MultiDataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Grid.Style>
+                    <Grid.Visibility>
+                        <Binding Path="CurrentMode"
+                                 Converter="{StaticResource UiModeToVisibilityConverter}"
+                                 ConverterParameter="Balance" />
+                    </Grid.Visibility>
                     <Border
                         VerticalAlignment="Center"
                         HorizontalAlignment="Center"
@@ -263,17 +246,11 @@
                 
                 <!-- dual quota provider -->
                 <StackPanel VerticalAlignment="Center">
-                    <StackPanel.Style>
-                        <Style TargetType="{x:Type StackPanel}">
-                            <Setter Property="Visibility" Value="Collapsed" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding CurrentMode}"
-                                             Value="{x:Static local:UiMode.DualQuota}">
-                                    <Setter Property="Visibility" Value="Visible" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </StackPanel.Style>
+                    <StackPanel.Visibility>
+                        <Binding Path="CurrentMode"
+                                 Converter="{StaticResource UiModeToVisibilityConverter}"
+                                 ConverterParameter="DualQuota" />
+                    </StackPanel.Visibility>
                     <Grid Margin="0,0,0,2">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="36" />
