@@ -11,6 +11,12 @@ using LLMUsageBar.Util;
 
 namespace LLMUsageBar;
 
+public enum UiMode {
+    Balance,
+    DualQuota,
+    SingleQouta
+}
+
 public class MainWindowVm:INotifyPropertyChanged {
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -25,8 +31,7 @@ public class MainWindowVm:INotifyPropertyChanged {
     public string CreditText { get; set; } = "조회 중...";
     public double MaxBalance { get; set; } = 0;
     public double BalanceRatio { get; set; } = 0;
-    public bool HasBalanceDisplay { get; set; }
-    public bool HasDualQuota { get; set; }
+    public UiMode CurrentMode { get; set; } = UiMode.Balance;
     public bool ShowCreditText { get; set; } = true;
     public double HourlyQuotaRatio { get; set; } = 0;
     public double WeeklyQuotaRatio { get; set; } = 0;
@@ -116,7 +121,7 @@ public class MainWindowVm:INotifyPropertyChanged {
                     ShortQuotaLabel = selectedProvider.ShortQuotaLabel;
                     LongQuotaLabel = selectedProvider.LongQuotaLabel;
                     CreditText = $"{ShortQuotaLabel} {quota.Short:0.#}% / {LongQuotaLabel} {quota.Long:0.#}%";
-                    HasDualQuota = true;
+                    CurrentMode = UiMode.DualQuota;
                     ShowCreditText = false;
                     HourlyQuotaRatio = quota.Short / 100;
                     WeeklyQuotaRatio = quota.Long / 100;
@@ -129,7 +134,7 @@ public class MainWindowVm:INotifyPropertyChanged {
                     ShortQuotaLabel = label;
                     HourlyQuotaRatio = ratio;
                     HourlyQuotaText = $"{ratio * 100:0.#}%";
-                    HasDualQuota = false;
+                    CurrentMode = UiMode.SingleQouta;
                     ShowCreditText = false;
                 }
             } else {
@@ -137,8 +142,8 @@ public class MainWindowVm:INotifyPropertyChanged {
                 this.MaxBalance = balance.Max;
                 this.BalanceRatio = balance.Max > 0 ? balance.Remain / balance.Max : 0;
                 CreditText = $"${balance.Remain:0.00}";
-                HasBalanceDisplay = balance.Max > 0;
-                ShowCreditText = !HasBalanceDisplay;
+                CurrentMode = UiMode.Balance;
+                ShowCreditText = balance.Max <= 0;
             }
         } catch(Exception e) {
             ErrorMessage = e.Message;
@@ -218,8 +223,7 @@ public class MainWindowVm:INotifyPropertyChanged {
     void ClearUsageDisplay() {
         MaxBalance = 0;
         BalanceRatio = 0;
-        HasBalanceDisplay = false;
-        HasDualQuota = false;
+        CurrentMode = UiMode.Balance;
         ShortQuotaLabel = "hourly";
         LongQuotaLabel = "weekly";
         HourlyQuotaRatio = 0;
