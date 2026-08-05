@@ -166,8 +166,19 @@
                            DockPanel.Dock="Left"
                            VerticalAlignment="Center"
                            Foreground="#353535"
-                           Visibility="{Binding CurrentMode, Converter={StaticResource UiModeToVisibilityConverter}, ConverterParameter=BalanceWithoutMax}">
+                           Visibility="{Binding CurrentMode, Converter={StaticResource UiModeToVisibilityConverter},
+                            ConverterParameter=BalanceWithoutMax}">
                     <Run Text="{Binding CreditText}" />
+                </TextBlock>
+                
+                <TextBlock FontSize="12"
+                           FontWeight="SemiBold"
+                           DockPanel.Dock="Left"
+                           VerticalAlignment="Center"
+                           Foreground="#353535"
+                           Visibility="{Binding CurrentMode, Converter={StaticResource UiModeToVisibilityConverter},
+                            ConverterParameter=Loading}">
+                    <Run Text="조회 중..." />
                 </TextBlock>
                 
                 <!-- single quota gauge bar (e.g. OpenRouter) -->
