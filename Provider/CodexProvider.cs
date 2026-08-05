@@ -22,9 +22,9 @@ public sealed class CodexProvider(HttpClient? httpClient = null) : ILlmProvider 
     public string Name => "Codex";
     public string QuotaUrl => "https://chatgpt.com/codex/settings/usage";
     public bool HasShortQuota => true;
-    public bool HasLongQuota => true;
-    public string ShortQuotaLabel => "hourly";
-    public string LongQuotaLabel => "weekly";
+    public bool HasLongQuota => false;
+    public string ShortQuotaLabel => "weekly";
+    public string LongQuotaLabel => "";
     public bool HasBalance => false;
 
     /// <summary>
@@ -59,7 +59,6 @@ public sealed class CodexProvider(HttpClient? httpClient = null) : ILlmProvider 
 
             return new CodexQuota {
                 Short = RemainingPercent(primaryWindow),
-                Long = usage?.RateLimit?.SecondaryWindow is null ? 0 : RemainingPercent(usage.RateLimit.SecondaryWindow)
             };
         }
         catch (Exception exception) when (exception is InvalidOperationException or FileNotFoundException) {
