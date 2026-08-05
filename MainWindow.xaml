@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LLMUsageBar"
+        xmlns:util="clr-namespace:LLMUsageBar.Util"
         mc:Ignorable="d"
         Title="LLMUsageBar"
         Width="230"
@@ -170,8 +171,18 @@
                 </TextBlock>
                 
                 <!-- single quota gauge bar (e.g. OpenRouter) -->
-                <StackPanel VerticalAlignment="Center"
-                            Visibility="{Binding HasDualQuota, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel VerticalAlignment="Center">
+                    <StackPanel.Style>
+                        <Style TargetType="{x:Type StackPanel}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CurrentMode}"
+                                             Value="{x:Static local:UiMode.SingleQouta}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
                     <Grid Margin="0,0,0,2">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="36" />
@@ -205,8 +216,23 @@
                 </StackPanel>
 
                 <!-- balance provider - using max balance (progress bar)  -->
-                <Grid VerticalAlignment="Center"
-                      Visibility="{Binding HasBalanceDisplay, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid VerticalAlignment="Center">
+                    <Grid.Style>
+                        <Style TargetType="{x:Type Grid}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding CurrentMode}"
+                                                   Value="{x:Static local:UiMode.Balance}" />
+                                        <Condition Binding="{Binding ShowCreditText}"
+                                                   Value="False" />
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </MultiDataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
                     <Border
                         VerticalAlignment="Center"
                         HorizontalAlignment="Center"
@@ -236,8 +262,18 @@
                 </Grid>
                 
                 <!-- dual quota provider -->
-                <StackPanel VerticalAlignment="Center"
-                            Visibility="{Binding HasDualQuota, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel VerticalAlignment="Center">
+                    <StackPanel.Style>
+                        <Style TargetType="{x:Type StackPanel}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CurrentMode}"
+                                             Value="{x:Static local:UiMode.DualQuota}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
                     <Grid Margin="0,0,0,2">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="36" />
