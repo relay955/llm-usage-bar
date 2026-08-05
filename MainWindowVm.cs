@@ -122,12 +122,15 @@ public class MainWindowVm:INotifyPropertyChanged {
                     WeeklyQuotaRatio = quota.Long / 100;
                     HourlyQuotaText = $"{quota.Short:0.#}%";
                     WeeklyQuotaText = $"{quota.Long:0.#}%";
-                } else if (selectedProvider.HasShortQuota) {
-                    CreditText = $"{quota.Short:0.#}%";
-                    ShowCreditText = true;
                 } else {
-                    CreditText = $"{quota.Long:0.#}%";
-                    ShowCreditText = true;
+                    // Single quota (e.g. Codex weekly) - display as gauge bar
+                    string label = selectedProvider.HasShortQuota ? selectedProvider.ShortQuotaLabel : selectedProvider.LongQuotaLabel;
+                    double ratio = selectedProvider.HasShortQuota ? quota.Short / 100.0 : quota.Long / 100.0;
+                    ShortQuotaLabel = label;
+                    HourlyQuotaRatio = ratio;
+                    HourlyQuotaText = $"{ratio * 100:0.#}%";
+                    HasDualQuota = false;
+                    ShowCreditText = false;
                 }
             } else {
                 var balance = await selectedProvider.GetCurrentBalanceAsync(App.Settings);
