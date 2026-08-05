@@ -12,6 +12,7 @@ using LLMUsageBar.Util;
 namespace LLMUsageBar;
 
 public enum UiMode {
+    Loading,
     Balance,
     BalanceWithoutMax,
     DualQuota,
@@ -29,10 +30,10 @@ public class MainWindowVm:INotifyPropertyChanged {
     public string ProviderName { get; set; } = "";
     public string ProviderQuotaUrl { get; set; } = "";
     public string ErrorMessage { get; set; } = "";
-    public string CreditText { get; set; } = "조회 중...";
+    public string CreditText { get; set; } = "";
     public double MaxBalance { get; set; } = 0;
     public double BalanceRatio { get; set; } = 0;
-    public UiMode CurrentMode { get; set; } = UiMode.BalanceWithoutMax;
+    public UiMode CurrentMode { get; set; } = UiMode.Loading;
     public double HourlyQuotaRatio { get; set; } = 0;
     public double WeeklyQuotaRatio { get; set; } = 0;
     public string ShortQuotaLabel { get; set; } = "hourly";
@@ -97,12 +98,16 @@ public class MainWindowVm:INotifyPropertyChanged {
     async Task RefreshCreditAsync() {
         if (this._isRefreshing) return;
 
+        CurrentMode = UiMode.Loading;
+        CreditText = "조회 중...";
+
         if (this._providerList.Count == 0) {
             ProviderName = "";
             ProviderQuotaUrl = "";
             ErrorMessage = "프로바이더 미사용";
             CreditText = "-";
             ClearUsageDisplay();
+            CurrentMode = UiMode.BalanceWithoutMax;
             return;
         }
 
@@ -145,6 +150,7 @@ public class MainWindowVm:INotifyPropertyChanged {
             ErrorMessage = e.Message;
             CreditText = "-";
             ClearUsageDisplay();
+            CurrentMode = UiMode.BalanceWithoutMax;
         } finally {
             this._isRefreshing = false;
         }
@@ -218,7 +224,6 @@ public class MainWindowVm:INotifyPropertyChanged {
     void ClearUsageDisplay() {
         MaxBalance = 0;
         BalanceRatio = 0;
-        CurrentMode = UiMode.BalanceWithoutMax;
         ShortQuotaLabel = "hourly";
         LongQuotaLabel = "weekly";
         HourlyQuotaRatio = 0;
