@@ -13,6 +13,7 @@ namespace LLMUsageBar;
 
 public enum UiMode {
     Balance,
+    BalanceWithoutMax,
     DualQuota,
     SingleQouta
 }
@@ -31,8 +32,7 @@ public class MainWindowVm:INotifyPropertyChanged {
     public string CreditText { get; set; } = "조회 중...";
     public double MaxBalance { get; set; } = 0;
     public double BalanceRatio { get; set; } = 0;
-    public UiMode CurrentMode { get; set; } = UiMode.Balance;
-    public bool ShowCreditText { get; set; } = true;
+    public UiMode CurrentMode { get; set; } = UiMode.BalanceWithoutMax;
     public double HourlyQuotaRatio { get; set; } = 0;
     public double WeeklyQuotaRatio { get; set; } = 0;
     public string ShortQuotaLabel { get; set; } = "hourly";
@@ -103,7 +103,6 @@ public class MainWindowVm:INotifyPropertyChanged {
             ErrorMessage = "프로바이더 미사용";
             CreditText = "-";
             ClearUsageDisplay();
-            ShowCreditText = true;
             return;
         }
 
@@ -122,7 +121,6 @@ public class MainWindowVm:INotifyPropertyChanged {
                     LongQuotaLabel = selectedProvider.LongQuotaLabel;
                     CreditText = $"{ShortQuotaLabel} {quota.Short:0.#}% / {LongQuotaLabel} {quota.Long:0.#}%";
                     CurrentMode = UiMode.DualQuota;
-                    ShowCreditText = false;
                     HourlyQuotaRatio = quota.Short / 100;
                     WeeklyQuotaRatio = quota.Long / 100;
                     HourlyQuotaText = $"{quota.Short:0.#}%";
@@ -135,21 +133,18 @@ public class MainWindowVm:INotifyPropertyChanged {
                     HourlyQuotaRatio = ratio;
                     HourlyQuotaText = $"{ratio * 100:0.#}%";
                     CurrentMode = UiMode.SingleQouta;
-                    ShowCreditText = false;
                 }
             } else {
                 var balance = await selectedProvider.GetCurrentBalanceAsync(App.Settings);
                 this.MaxBalance = balance.Max;
                 this.BalanceRatio = balance.Max > 0 ? balance.Remain / balance.Max : 0;
                 CreditText = $"${balance.Remain:0.00}";
-                CurrentMode = UiMode.Balance;
-                ShowCreditText = balance.Max <= 0;
+                CurrentMode = balance.Max > 0 ? UiMode.Balance : UiMode.BalanceWithoutMax;
             }
         } catch(Exception e) {
             ErrorMessage = e.Message;
             CreditText = "-";
             ClearUsageDisplay();
-            ShowCreditText = true;
         } finally {
             this._isRefreshing = false;
         }
@@ -223,7 +218,7 @@ public class MainWindowVm:INotifyPropertyChanged {
     void ClearUsageDisplay() {
         MaxBalance = 0;
         BalanceRatio = 0;
-        CurrentMode = UiMode.Balance;
+        CurrentMode = UiMode.BalanceWithoutMax;
         ShortQuotaLabel = "hourly";
         LongQuotaLabel = "weekly";
         HourlyQuotaRatio = 0;
