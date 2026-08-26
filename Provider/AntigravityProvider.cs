@@ -30,8 +30,8 @@ public sealed partial class AntigravityProvider : ILlmProvider {
     public string QuotaUrl => "https://antigravity.google/settings";
     public bool HasShortQuota => true;
     public bool HasLongQuota => true;
-    public string ShortQuotaLabel => "Gemini";
-    public string LongQuotaLabel => "Claude";
+    public string ShortQuotaLabel => "hourly";
+    public string LongQuotaLabel => "weekly";
     public bool HasBalance => false;
 
     /// <summary>
@@ -226,34 +226,39 @@ public sealed partial class AntigravityProvider : ILlmProvider {
     }
 
     /// <summary>
-    /// quota summary 또는 구형 model config 응답에서 두 모델 그룹의 가장 제한적인 잔여 비율을 선택합니다.
+    /// quota summary 또는 구형 model config 응답에서 각 모델 그룹의 가장 제한적인 잔여 비율을 선택합니다.
+    /// Gemini 그룹의 hourly(5h) 창과 weekly 창을 개별적으로 집계하여 Short/Long에 매핑합니다.
     /// </summary>
     static AntigravityQuota? ParseQuota(JsonElement root) {
-        var geminiFractions = new List<double>();
-        var claudeFractions = new List<double>();
-        CollectQuotaFractions(root, "", geminiFractions, claudeFractions);
+        var geminiHourly = new List<double>();
+        var geminiWeekly = new List<double>();
+        var claudeHourly = new List<double>();
+        var claudeWeekly = new List<double>();
+        CollectQuotaFractions(root, "", geminiHourly, geminiWeekly, claudeHourly, claudeWeekly);
 
-        if (geminiFractions.Count == 0 || claudeFractions.Count == 0) {
+        if (geminiHourly.Count == 0 || geminiWeekly.Count == 0) {
             return null;
         }
 
         return new AntigravityQuota {
-            Short = Math.Clamp(geminiFractions.Min() * 100, 0, 100),
-            Long = Math.Clamp(claudeFractions.Min() * 100, 0, 100)
+            Short = Math.Clamp(geminiHourly.Min() * 100, 0, 100),
+            Long = Math.Clamp(geminiWeekly.Min() * 100, 0, 100)
         };
     }
 
     /// <summary>
-    /// JSON 트리를 순회하며 현재 모델 또는 그룹 이름에 속한 remainingFraction 값을 수집합니다.
+    /// JSON 트리를 순회하며 현재 모델 또는 그룹 이름과 창 크기에 속한 remainingFraction 값을 수집합니다.
     /// </summary>
     static void CollectQuotaFractions(
         JsonElement element,
         string inheritedName,
-        ICollection<double> geminiFractions,
-        ICollection<double> claudeFractions) {
+        ICollection<double> geminiHourly,
+        ICollection<double> geminiWeekly,
+        ICollection<double> claudeHourly,
+        ICollection<double> claudeWeekly) {
         if (element.ValueKind == JsonValueKind.Array) {
             foreach (JsonElement item in element.EnumerateArray()) {
-                CollectQuotaFractions(item, inheritedName, geminiFractions, claudeFractions);
+                CollectQuotaFractions(item, inheritedName, geminiHourly, geminiWeekly, claudeHourly, claudeWeekly);
             }
             return;
         }
@@ -277,18 +282,76 @@ public sealed partial class AntigravityProvider : ILlmProvider {
             ? inheritedName
             : $"{inheritedName} {localName}".Trim();
 
-        if (TryReadRemainingFraction(element, out double fraction)) {
-            if (currentName.Contains("gemini", StringComparison.OrdinalIgnoreCase)) {
-                geminiFractions.Add(fraction);
-            } else if (currentName.Contains("claude", StringComparison.OrdinalIgnoreCase)
-                       || currentName.Contains("gpt", StringComparison.OrdinalIgnoreCase)) {
-                claudeFractions.Add(fraction);
+        if (!TryReadRemainingFraction(element, out double fraction)) {
+            foreach (JsonProperty property in element.EnumerateObject()) {
+                CollectQuotaFractions(property.Value, currentName, geminiHourly, geminiWeekly, claudeHourly, claudeWeekly);
             }
+            return;
+        }
+
+        bool isWeekly = IsWeeklyWindow(element, localName);
+        ICollection<double>? bucket = GroupBucket(
+            currentName, isWeekly, geminiHourly, geminiWeekly, claudeHourly, claudeWeekly);
+        if (bucket is not null) {
+            bucket.Add(fraction);
         }
 
         foreach (JsonProperty property in element.EnumerateObject()) {
-            CollectQuotaFractions(property.Value, currentName, geminiFractions, claudeFractions);
+            CollectQuotaFractions(property.Value, currentName, geminiHourly, geminiWeekly, claudeHourly, claudeWeekly);
         }
+    }
+
+    /// <summary>
+    /// 객체의 window/bucketId 필드 또는 그룹 이름으로부터 주어진 창이 weekly인지 판정합니다.
+    /// </summary>
+    static bool IsWeeklyWindow(JsonElement element, string localName) {
+        if (element.TryGetProperty("window", out JsonElement window)
+            && window.ValueKind == JsonValueKind.String
+            && IsWeeklyToken(window.GetString())) {
+            return true;
+        }
+
+        if (element.TryGetProperty("bucketId", out JsonElement bucketId)
+            && bucketId.ValueKind == JsonValueKind.String
+            && IsWeeklyToken(bucketId.GetString())) {
+            return true;
+        }
+
+        return IsWeeklyToken(localName);
+    }
+
+    /// <summary>
+    /// 창 토큰이 weekly(7d/168h 등)를 포함하면 true를 반환합니다.
+    /// </summary>
+    static bool IsWeeklyToken(string? value) {
+        if (string.IsNullOrWhiteSpace(value)) {
+            return false;
+        }
+
+        string normalized = value.Trim().ToLowerInvariant();
+        return normalized is "weekly" or "week" or "wk" or "7d" or "168h";
+    }
+
+    /// <summary>
+    /// 모델 그룹과 창 크기에 따라 해당 잔여 비율 목록을 반환합니다. 그룹에 속하지 않으면 null.
+    /// </summary>
+    static ICollection<double>? GroupBucket(
+        string currentName,
+        bool isWeekly,
+        ICollection<double> geminiHourly,
+        ICollection<double> geminiWeekly,
+        ICollection<double> claudeHourly,
+        ICollection<double> claudeWeekly) {
+        if (currentName.Contains("gemini", StringComparison.OrdinalIgnoreCase)) {
+            return isWeekly ? geminiWeekly : geminiHourly;
+        }
+
+        if (currentName.Contains("claude", StringComparison.OrdinalIgnoreCase)
+            || currentName.Contains("gpt", StringComparison.OrdinalIgnoreCase)) {
+            return isWeekly ? claudeWeekly : claudeHourly;
+        }
+
+        return null;
     }
 
     /// <summary>
