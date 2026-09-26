@@ -11,6 +11,7 @@ public partial class MainWindow : Window {
     const double TargetWidth = 230;
     const double EdgePadding = 300;
     const double DefaultTaskbarHeight = 40;
+    const uint MonitorDefaultToNearest = 2;
 
     readonly MainWindowVm _vm;
     readonly DispatcherTimer _topmostTimer = new();
@@ -106,9 +107,66 @@ public partial class MainWindow : Window {
     }
 
     void TopmostTimer_Tick(object? sender, EventArgs e) {
+        if (IsFullscreenWindowInForeground()) {
+            Hide();
+            return;
+        }
+
+        if (!IsVisible) Show();
         if (WindowState == WindowState.Minimized) WindowState = WindowState.Normal;
         Topmost = false;
         Topmost = true;
+    }
+
+    bool IsFullscreenWindowInForeground() {
+        nint foregroundWindow = GetForegroundWindow();
+        nint ownWindow = new WindowInteropHelper(this).Handle;
+        if (foregroundWindow == 0 || foregroundWindow == ownWindow) return false;
+
+        nint ownMonitor = MonitorFromWindow(ownWindow, MonitorDefaultToNearest);
+        nint foregroundMonitor = MonitorFromWindow(foregroundWindow, MonitorDefaultToNearest);
+        if (ownMonitor == 0 || ownMonitor != foregroundMonitor) return false;
+
+        if (!GetWindowRect(foregroundWindow, out NativeRect windowRect)) return false;
+
+        MonitorInfo monitorInfo = new() { Size = Marshal.SizeOf<MonitorInfo>() };
+        if (!GetMonitorInfo(ownMonitor, ref monitorInfo)) return false;
+
+        const int tolerance = 2;
+        return windowRect.Left <= monitorInfo.Monitor.Left + tolerance &&
+               windowRect.Top <= monitorInfo.Monitor.Top + tolerance &&
+               windowRect.Right >= monitorInfo.Monitor.Right - tolerance &&
+               windowRect.Bottom >= monitorInfo.Monitor.Bottom - tolerance;
+    }
+
+    [DllImport("user32.dll")]
+    static extern nint GetForegroundWindow();
+
+    [DllImport("user32.dll")]
+    static extern nint MonitorFromWindow(nint hwnd, uint flags);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    static extern bool GetWindowRect(nint hwnd, out NativeRect rect);
+
+    [DllImport("user32.dll", CharSet = CharSet.Auto)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    static extern bool GetMonitorInfo(nint monitor, ref MonitorInfo monitorInfo);
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct NativeRect {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct MonitorInfo {
+        public int Size;
+        public NativeRect Monitor;
+        public NativeRect Work;
+        public uint Flags;
     }
 
     void DragHandle_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e) {
