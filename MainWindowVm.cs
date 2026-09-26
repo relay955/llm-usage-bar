@@ -183,6 +183,7 @@ public class MainWindowVm:INotifyPropertyChanged {
         this._providerList.Clear();
 
         if (App.Settings.UseOpenRouter) this._providerList.Add(new OpenRouterProvider());
+        if (App.Settings.UseNanoGpt) this._providerList.Add(new NanoGptProvider());
         if (App.Settings.UseChutes) this._providerList.Add(new ChutesProvider());
         if (App.Settings.UseCodex) this._providerList.Add(new CodexProvider());
         if (App.Settings.UseAntigravity) this._providerList.Add(new AntigravityProvider());

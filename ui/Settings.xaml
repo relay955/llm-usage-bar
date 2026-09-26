@@ -139,18 +139,25 @@
                 <DataTrigger Binding="{Binding SelectedTabIndex}" Value="3">
                     <Setter Property="Content">
                         <Setter.Value>
-                            <local:ChutesSettingsControl />
+                            <local:NanoGptSettingsControl />
                         </Setter.Value>
                     </Setter>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding SelectedTabIndex}" Value="4">
                     <Setter Property="Content">
                         <Setter.Value>
-                            <local:OllamaCloudSettingsControl />
+                            <local:ChutesSettingsControl />
                         </Setter.Value>
                     </Setter>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding SelectedTabIndex}" Value="5">
+                    <Setter Property="Content">
+                        <Setter.Value>
+                            <local:OllamaCloudSettingsControl />
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding SelectedTabIndex}" Value="6">
                     <Setter Property="Content">
                         <Setter.Value>
                             <local:AntigravitySettingsControl />
@@ -222,6 +229,7 @@
                 <ListBoxItem Content="General" />
                 <ListBoxItem Content="Codex" />
                 <ListBoxItem Content="Openrouter" />
+                <ListBoxItem Content="NanoGPT" />
                 <ListBoxItem Content="Chutes" />
                 <ListBoxItem Content="Ollama Cloud" />
                 <ListBoxItem Content="Antigravity" />
