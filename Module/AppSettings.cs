@@ -17,6 +17,9 @@ public sealed class AppSettings:INotifyPropertyChanged {
     public bool UseAntigravity { get; set; }
     public bool UseOpenRouter { get; set; }
     public string OpenRouterApiKey { get; set; } = "";
+    public bool UseNanoGpt { get; set; }
+    public string NanoGptApiKey { get; set; } = "";
+    public double NanoGptMaxBalance { get; set; }
     public bool UseChutes { get; set; }
     public string ChutesFingerprint { get; set; } = "";
     public double ChutesMaxBalance { get; set; }
@@ -37,6 +40,9 @@ public static class AppSettingsStore {
     private const string UseAntigravityKey = "useAntigravity";
     private const string UseOpenRouterKey = "useOpenRouter";
     private const string OpenRouterApiKeyKey = "OpenRouterApiKey";
+    private const string UseNanoGptKey = "useNanoGpt";
+    private const string NanoGptApiKeyKey = "NanoGptApiKey";
+    private const string NanoGptMaxBalanceKey = "NanoGptMaxBalance";
     private const string UseChutesKey = "useChutes";
     private const string ChutesFingerprintKey = "ChutesFingerprint";
     private const string ChutesMaxBalanceKey = "ChutesMaxBalance";
@@ -73,6 +79,9 @@ public static class AppSettingsStore {
             UseAntigravity = ReadBool(table, UseAntigravityKey, false),
             UseOpenRouter = ReadBool(table, UseOpenRouterKey, false),
             OpenRouterApiKey = ReadString(table, OpenRouterApiKeyKey, ""),
+            UseNanoGpt = ReadBool(table, UseNanoGptKey, false),
+            NanoGptApiKey = ReadString(table, NanoGptApiKeyKey, ""),
+            NanoGptMaxBalance = ReadDouble(table, NanoGptMaxBalanceKey, 0),
             UseChutes = ReadBool(table, UseChutesKey, false),
             ChutesFingerprint = ReadString(table, ChutesFingerprintKey, ""),
             ChutesMaxBalance = ReadDouble(table, ChutesMaxBalanceKey, 0),
@@ -96,6 +105,9 @@ public static class AppSettingsStore {
             [UseAntigravityKey] = settings.UseAntigravity,
             [UseOpenRouterKey] = settings.UseOpenRouter,
             [OpenRouterApiKeyKey] = settings.OpenRouterApiKey,
+            [UseNanoGptKey] = settings.UseNanoGpt,
+            [NanoGptApiKeyKey] = settings.NanoGptApiKey,
+            [NanoGptMaxBalanceKey] = settings.NanoGptMaxBalance,
             [UseChutesKey] = settings.UseChutes,
             [ChutesFingerprintKey] = settings.ChutesFingerprint,
             [ChutesMaxBalanceKey] = settings.ChutesMaxBalance,
