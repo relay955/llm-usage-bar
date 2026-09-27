@@ -14,6 +14,7 @@
         AllowsTransparency="True"
         Background="Transparent"
         Topmost="True"
+        ShowActivated="False"
         ShowInTaskbar="False">
     <Window.Resources>
         <local:MainWindowVm x:Key="Vm" />
