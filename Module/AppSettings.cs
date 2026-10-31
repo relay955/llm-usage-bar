@@ -26,6 +26,8 @@ public sealed class AppSettings:INotifyPropertyChanged {
     public double OpenRouterMaxBalance { get; set; }
     public bool UseOllamaCloud { get; set; }
     public string OllamaCloudSessionCookie { get; set; } = "";
+    public bool UseCommandCode { get; set; }
+    public string CommandCodeAuthJsonPath { get; set; } = AppSettingsStore.DefaultCommandCodeAuthJsonPath;
     public string SelectedProviderName { get; set; } = "";
     public double? WindowLeft { get; set; }
     public double? WindowTop { get; set; }
@@ -49,6 +51,8 @@ public static class AppSettingsStore {
     private const string OpenRouterMaxBalanceKey = "OpenRouterMaxBalance";
     private const string UseOllamaCloudKey = "useOllamaCloud";
     private const string OllamaCloudSessionCookieKey = "session_cookie";
+    private const string UseCommandCodeKey = "useCommandCode";
+    private const string CommandCodeAuthJsonPathKey = "CommandCodeAuthJsonPath";
     private const string SelectedProviderNameKey = "selected_provider_name";
     private const string WindowLeftKey = "window_left";
     private const string WindowTopKey = "window_top";
@@ -62,6 +66,9 @@ public static class AppSettingsStore {
 
     public static string DefaultCodexAuthJsonPath =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".codex", "auth.json");
+
+    public static string DefaultCommandCodeAuthJsonPath =>
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".commandcode", "auth.json");
 
     public static AppSettings Load() {
         if (!File.Exists(SettingsFilePath)) {
@@ -88,6 +95,8 @@ public static class AppSettingsStore {
             OpenRouterMaxBalance = ReadDouble(table, OpenRouterMaxBalanceKey, 0),
             UseOllamaCloud = ReadBool(table, UseOllamaCloudKey, false),
             OllamaCloudSessionCookie = ReadString(table, OllamaCloudSessionCookieKey, ""),
+            UseCommandCode = ReadBool(table, UseCommandCodeKey, false),
+            CommandCodeAuthJsonPath = ReadString(table, CommandCodeAuthJsonPathKey, DefaultCommandCodeAuthJsonPath),
             SelectedProviderName = ReadString(table, SelectedProviderNameKey, ""),
             WindowLeft = ReadNullableDouble(table, WindowLeftKey),
             WindowTop = ReadNullableDouble(table, WindowTopKey)
@@ -114,6 +123,8 @@ public static class AppSettingsStore {
             [OpenRouterMaxBalanceKey] = settings.OpenRouterMaxBalance,
             [UseOllamaCloudKey] = settings.UseOllamaCloud,
             [OllamaCloudSessionCookieKey] = settings.OllamaCloudSessionCookie,
+            [UseCommandCodeKey] = settings.UseCommandCode,
+            [CommandCodeAuthJsonPathKey] = settings.CommandCodeAuthJsonPath,
             [SelectedProviderNameKey] = settings.SelectedProviderName
         };
 

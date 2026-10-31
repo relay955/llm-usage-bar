@@ -188,6 +188,7 @@ public class MainWindowVm:INotifyPropertyChanged {
         if (App.Settings.UseCodex) this._providerList.Add(new CodexProvider());
         if (App.Settings.UseAntigravity) this._providerList.Add(new AntigravityProvider());
         if (App.Settings.UseOllamaCloud) this._providerList.Add(new OllamaCloudProvider());
+        if (App.Settings.UseCommandCode) this._providerList.Add(new CommandCodeProvider());
 
         if (this._selectedProviderIndex < 0 || this._selectedProviderIndex >= this._providerList.Count) 
             this._selectedProviderIndex = 0;

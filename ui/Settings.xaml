@@ -164,6 +164,13 @@
                         </Setter.Value>
                     </Setter>
                 </DataTrigger>
+                <DataTrigger Binding="{Binding SelectedTabIndex}" Value="7">
+                    <Setter Property="Content">
+                        <Setter.Value>
+                            <local:CommandCodeSettingsControl />
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
             </Style.Triggers>
         </Style>
     </Window.Resources>
@@ -233,6 +240,7 @@
                 <ListBoxItem Content="Chutes" />
                 <ListBoxItem Content="Ollama Cloud" />
                 <ListBoxItem Content="Antigravity" />
+                <ListBoxItem Content="Command Code" />
             </ListBox>
         </Border>
 
