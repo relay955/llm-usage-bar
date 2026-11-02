@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.ComponentModel;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -29,6 +30,10 @@ public class MainWindowVm:INotifyPropertyChanged {
     DateTimeOffset? _longResetAt;
     bool _isRefreshing;
     int _selectedProviderIndex;
+    string? _pendingProviderName;
+    bool _refreshRequested;
+
+    public ObservableCollection<ProviderListItem> AvailableProviders { get; } = new();
 
     public string ProviderName { get; set; } = "";
     public string ProviderQuotaUrl { get; set; } = "";
@@ -53,6 +58,7 @@ public class MainWindowVm:INotifyPropertyChanged {
     public ICommand ManualRefreshCommand { get; }
     public ICommand PreviousProviderCommand { get; }
     public ICommand NextProviderCommand { get; }
+    public ICommand SelectProviderCommand { get; }
     
     public MainWindowVm() {
         OpenSettingsCommand = new Command(async void (owner) => {
@@ -69,6 +75,9 @@ public class MainWindowVm:INotifyPropertyChanged {
         });
         NextProviderCommand = new Command(async void (_) => {
             await ChangeProviderAsync(1);
+        });
+        SelectProviderCommand = new Command(async void (parameter) => {
+            if (parameter is ProviderListItem item) await SelectProviderAsync(item.Name);
         });
     }
 
@@ -138,7 +147,12 @@ public class MainWindowVm:INotifyPropertyChanged {
 
 
     async Task RefreshCreditAsync() {
-        if (this._isRefreshing) return;
+        if (this._isRefreshing) {
+            this._refreshRequested = true;
+            return;
+        }
+
+        this._refreshRequested = false;
 
         CurrentMode = UiMode.Loading;
         CreditText = "조회 중...";
@@ -198,23 +212,48 @@ public class MainWindowVm:INotifyPropertyChanged {
             CurrentMode = UiMode.BalanceWithoutMax;
         } finally {
             this._isRefreshing = false;
+            if (this._pendingProviderName is string pendingProviderName) {
+                this._pendingProviderName = null;
+                await SelectProviderAsync(pendingProviderName);
+            }
+            if (this._refreshRequested) await RefreshCreditAsync();
         }
     }
 
     async Task ChangeProviderAsync(int direction) {
-        if (this._isRefreshing) return;
         if (this._providerList.Count <= 1) return;
 
-        this._selectedProviderIndex += direction;
+        int currentIndex = this._providerList.FindIndex(provider => provider.Name == this._pendingProviderName);
+        if (currentIndex < 0) currentIndex = this._selectedProviderIndex;
+        int nextIndex = (currentIndex + direction + this._providerList.Count) % this._providerList.Count;
+        await SelectProviderAsync(this._providerList[nextIndex].Name);
+    }
 
-        if (this._selectedProviderIndex < 0) {
-            this._selectedProviderIndex = this._providerList.Count - 1;
-        } else if (this._selectedProviderIndex >= this._providerList.Count) {
-            this._selectedProviderIndex = 0;
+    /// <summary>
+    /// 지정한 프로바이더로 전환하며 조회 중에는 마지막 선택을 보관합니다.
+    /// </summary>
+    async Task SelectProviderAsync(string providerName) {
+        int index = this._providerList.FindIndex(provider => provider.Name == providerName);
+        if (index < 0) return;
+        if (this._isRefreshing) {
+            this._pendingProviderName = providerName;
+            return;
         }
+        if (index == this._selectedProviderIndex) return;
 
+        this._selectedProviderIndex = index;
+        UpdateProviderSelection();
         SaveSelectedProvider();
         await RefreshCreditAsync();
+    }
+
+    /// <summary>
+    /// 목록에서 현재 선택한 프로바이더를 표시합니다.
+    /// </summary>
+    void UpdateProviderSelection() {
+        for (int index = 0; index < AvailableProviders.Count; index++) {
+            AvailableProviders[index].IsSelected = index == this._selectedProviderIndex;
+        }
     }
 
     void SaveSelectedProvider() {
@@ -225,6 +264,7 @@ public class MainWindowVm:INotifyPropertyChanged {
     }
 
     void PrepareProviderList() {
+        this._pendingProviderName = null;
         this._providerList.Clear();
 
         if (App.Settings.UseOpenRouter) this._providerList.Add(new OpenRouterProvider());
@@ -245,6 +285,13 @@ public class MainWindowVm:INotifyPropertyChanged {
         if (savedProviderIndex >= 0) {
             this._selectedProviderIndex = savedProviderIndex;
         }
+
+        AvailableProviders.Clear();
+        foreach (var provider in this._providerList) {
+            AvailableProviders.Add(new ProviderListItem(provider.Name));
+        }
+        UpdateProviderSelection();
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasMultipleProviders)));
 
         ProviderName = this._providerList.Count == 0
             ? ""

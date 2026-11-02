@@ -24,6 +24,11 @@ public partial class MainWindow : Window {
 
         Loaded += OnLoaded;
         Closed += OnClosed;
+        Deactivated += (_, _) => ProviderPicker.Close();
+        LocationChanged += (_, _) => ProviderPicker.Close();
+        IsVisibleChanged += (_, _) => {
+            if (!IsVisible) ProviderPicker.Close();
+        };
     }
 
     void OnLoaded(object sender, RoutedEventArgs e) {
@@ -109,12 +114,14 @@ public partial class MainWindow : Window {
 
     void TopmostTimer_Tick(object? sender, EventArgs e) {
         if (IsFullscreenWindowOnOwnMonitor()) {
+            ProviderPicker.Close();
             Hide();
             return;
         }
 
         if (!IsVisible) Show();
         if (WindowState == WindowState.Minimized) WindowState = WindowState.Normal;
+        if (ProviderPicker.IsOpen) return;
         Topmost = false;
         Topmost = true;
     }
@@ -214,6 +221,8 @@ public partial class MainWindow : Window {
     }
 
     void OnClosed(object? sender, EventArgs e) {
+        ProviderPicker.Close();
+        _topmostTimer.Stop();
         SaveWindowPosition();
         _vm.StopTimer();
     }

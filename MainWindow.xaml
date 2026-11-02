@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LLMUsageBar"
         xmlns:util="clr-namespace:LLMUsageBar.Util"
+        xmlns:ui="clr-namespace:LLMUsageBar.ui"
         mc:Ignorable="d"
         Title="LLMUsageBar"
         Width="{Binding WindowWidth}"
@@ -24,7 +25,8 @@
         <Binding Source="{StaticResource Vm}" />
     </Window.DataContext>
     
-    <Border BorderThickness="1"
+    <Border x:Name="BarBorder"
+            BorderThickness="1"
             Background="#01FFFFFF">
         <Border.Resources>
             <Style x:Key="HoverSettingsButtonStyle"
@@ -93,6 +95,10 @@
             </Style>
         </Border.Resources>
         <Grid>
+            <ui:ProviderPickerControl x:Name="ProviderPicker"
+                                      PlacementTarget="{Binding ElementName=BarBorder}"
+                                      ItemsSource="{Binding AvailableProviders}"
+                                      SelectionCommand="{Binding SelectProviderCommand}" />
             <DockPanel>
                 <StackPanel Margin="5,0,5,0" DockPanel.Dock="Left" VerticalAlignment="Center">
                 <Button Width="15"
