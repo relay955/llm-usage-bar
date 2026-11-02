@@ -59,7 +59,9 @@ public sealed class CodexProvider(HttpClient? httpClient = null) : ILlmProvider 
 
             return new CodexQuota {
                 Short = RemainingPercent(primaryWindow),
-                Long = usage?.RateLimit?.SecondaryWindow is null ? 0 : RemainingPercent(usage.RateLimit.SecondaryWindow)
+                Long = usage?.RateLimit?.SecondaryWindow is null ? 0 : RemainingPercent(usage.RateLimit.SecondaryWindow),
+                ShortResetAt = GetResetAt(primaryWindow),
+                LongResetAt = GetResetAt(usage?.RateLimit?.SecondaryWindow)
             };
         }
         catch (Exception exception) when (exception is InvalidOperationException or FileNotFoundException) {
@@ -141,6 +143,19 @@ public sealed class CodexProvider(HttpClient? httpClient = null) : ILlmProvider 
     /// </summary>
     static double RemainingPercent(RateLimitWindow window) {
         return Math.Clamp(100 - window.UsedPercent, 0, 100);
+    }
+
+    /// <summary>
+    /// 윈도우의 리셋 시각을 UTC로 변환하며 값이 없으면 남은 초를 기준으로 계산합니다.
+    /// </summary>
+    static DateTimeOffset? GetResetAt(RateLimitWindow? window) {
+        if (window?.ResetAt is > 0) {
+            return DateTimeOffset.FromUnixTimeSeconds(window.ResetAt.Value);
+        }
+
+        return window?.ResetAfterSeconds is >= 0
+            ? DateTimeOffset.UtcNow.AddSeconds(window.ResetAfterSeconds.Value)
+            : null;
     }
 
     /// <summary>
@@ -254,5 +269,11 @@ public sealed class CodexProvider(HttpClient? httpClient = null) : ILlmProvider 
     sealed class RateLimitWindow {
         [JsonPropertyName("used_percent")]
         public double UsedPercent { get; init; }
+
+        [JsonPropertyName("reset_at")]
+        public long? ResetAt { get; init; }
+
+        [JsonPropertyName("reset_after_seconds")]
+        public long? ResetAfterSeconds { get; init; }
     }
 }

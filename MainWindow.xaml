@@ -7,7 +7,7 @@
         xmlns:util="clr-namespace:LLMUsageBar.Util"
         mc:Ignorable="d"
         Title="LLMUsageBar"
-        Width="230"
+        Width="{Binding WindowWidth}"
         Height="48"
         WindowStyle="None"
         ResizeMode="NoResize"
@@ -30,6 +30,7 @@
             <Style x:Key="HoverSettingsButtonStyle"
                    TargetType="{x:Type Button}"
                    BasedOn="{StaticResource IconButton}">
+                <Setter Property="Background" Value="White" />
                 <Setter Property="Visibility" Value="Hidden" />
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Border}}"
@@ -115,33 +116,8 @@
                     <Image Source="Assets/arrow-down.png" Width="10" Height="10" Stretch="Uniform" />
                 </Button>
                 </StackPanel>
-                <Button Width="28"
-                    Height="28"
-                    Margin="0,0,5,0"
-                    Style="{StaticResource HoverSettingsButtonStyle}"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Center"
-                    Command="{Binding OpenSettingsCommand}"
-                    CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
-                    DockPanel.Dock="Right"
-                    ToolTip="설정"
-                    Foreground="#FFFFFFFF"
-                    FontSize="15">
-                <Image Source="Assets/settings.png" Width="18" Height="18" Stretch="Uniform" />
-            </Button>
-            <Button Width="28"
-                    Height="28"
-                    Margin="0,0,2,0"
-                    Style="{StaticResource HoverSettingsButtonStyle}"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Center"
-                    Command="{Binding ManualRefreshCommand}"
-                    DockPanel.Dock="Right"
-                    ToolTip="수동갱신"
-                    Foreground="#FFFFFFFF">
-                <Image Source="Assets/refresh.png" Width="18" Height="18" Stretch="Uniform" />
-                </Button>
-                <StackPanel HorizontalAlignment="Left"
+                <StackPanel HorizontalAlignment="Stretch"
+                        Margin="0,0,5,0"
                         VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Left"
@@ -222,7 +198,7 @@
                 </StackPanel>
 
                 <!-- balance provider - using max balance (progress bar)  -->
-                <Grid VerticalAlignment="Center">
+                <Grid VerticalAlignment="Center" HorizontalAlignment="Left">
                     <Grid.Visibility>
                         <Binding Path="CurrentMode"
                                  Converter="{StaticResource UiModeToVisibilityConverter}"
@@ -267,8 +243,16 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="36" />
                             <ColumnDefinition Width="100" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="{Binding ShortQuotaLabel}"
+                                   FontSize="9"
+                                   FontWeight="SemiBold"
+                                   Foreground="#555555"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="2"
+                                   Text="{Binding HourlyRemainingTime}"
+                                   Margin="5,0,0,0"
                                    FontSize="9"
                                    FontWeight="SemiBold"
                                    Foreground="#555555"
@@ -297,8 +281,16 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="36" />
                             <ColumnDefinition Width="100" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="{Binding LongQuotaLabel}"
+                                   FontSize="9"
+                                   FontWeight="SemiBold"
+                                   Foreground="#555555"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="2"
+                                   Text="{Binding WeeklyRemainingTime}"
+                                   Margin="5,0,0,0"
                                    FontSize="9"
                                    FontWeight="SemiBold"
                                    Foreground="#555555"
@@ -326,6 +318,31 @@
                 </StackPanel>
                 </StackPanel>
             </DockPanel>
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Margin="0,0,5,0"
+                        Panel.ZIndex="5">
+                <Button Width="28"
+                        Height="28"
+                        Margin="0,0,2,0"
+                        Style="{StaticResource HoverSettingsButtonStyle}"
+                        Command="{Binding ManualRefreshCommand}"
+                        ToolTip="수동갱신"
+                        Foreground="#FFFFFFFF">
+                    <Image Source="Assets/refresh.png" Width="18" Height="18" Stretch="Uniform" />
+                </Button>
+                <Button Width="28"
+                        Height="28"
+                        Style="{StaticResource HoverSettingsButtonStyle}"
+                        Command="{Binding OpenSettingsCommand}"
+                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                        ToolTip="설정"
+                        Foreground="#FFFFFFFF"
+                        FontSize="15">
+                    <Image Source="Assets/settings.png" Width="18" Height="18" Stretch="Uniform" />
+                </Button>
+            </StackPanel>
             <Polygon Style="{StaticResource WindowDragHandleStyle}"
                      Width="12"
                      Height="12"

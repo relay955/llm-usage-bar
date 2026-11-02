@@ -23,7 +23,10 @@ public class MainWindowVm:INotifyPropertyChanged {
     public event PropertyChangedEventHandler? PropertyChanged;
 
     readonly DispatcherTimer _refreshTimer = new();
+    readonly DispatcherTimer _countdownTimer = new();
     readonly List<ILlmProvider> _providerList = new();
+    DateTimeOffset? _shortResetAt;
+    DateTimeOffset? _longResetAt;
     bool _isRefreshing;
     int _selectedProviderIndex;
 
@@ -40,6 +43,9 @@ public class MainWindowVm:INotifyPropertyChanged {
     public string LongQuotaLabel { get; set; } = "weekly";
     public string HourlyQuotaText { get; set; } = "";
     public string WeeklyQuotaText { get; set; } = "";
+    public string HourlyRemainingTime { get; set; } = "";
+    public string WeeklyRemainingTime { get; set; } = "";
+    public double WindowWidth => string.IsNullOrEmpty(HourlyRemainingTime) && string.IsNullOrEmpty(WeeklyRemainingTime) ? 230 : 285;
     public bool HasMultipleProviders => this._providerList.Count > 1;
 
     public ICommand OpenSettingsCommand { get; }
@@ -69,10 +75,46 @@ public class MainWindowVm:INotifyPropertyChanged {
     public void Init() {
         PrepareProviderList();
         ConfigureRefreshTimer();
+        this._countdownTimer.Interval = TimeSpan.FromSeconds(1);
+        this._countdownTimer.Tick -= CountdownTimer_Tick;
+        this._countdownTimer.Tick += CountdownTimer_Tick;
+        this._countdownTimer.Start();
         _ = RefreshCreditAsync();
     }
 
-    public void StopTimer() => this._refreshTimer.Stop();
+    /// <summary>
+    /// 창이 닫히면 API 갱신 및 남은 시간 갱신 타이머를 중지합니다.
+    /// </summary>
+    public void StopTimer() {
+        this._refreshTimer.Stop();
+        this._countdownTimer.Stop();
+    }
+
+    /// <summary>
+    /// API를 재호출하지 않고 매초 리셋까지 남은 시간을 갱신합니다.
+    /// </summary>
+    void CountdownTimer_Tick(object? sender, EventArgs e) => UpdateRemainingTimes();
+
+    /// <summary>
+    /// 두 윈도우의 남은 시간을 동일한 현재 시각으로 계산합니다.
+    /// </summary>
+    void UpdateRemainingTimes() {
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+        HourlyRemainingTime = FormatRemainingTime(this._shortResetAt, now);
+        WeeklyRemainingTime = FormatRemainingTime(this._longResetAt, now);
+    }
+
+    /// <summary>
+    /// 24시간 미만은 시:분으로, 그 이상은 일과 시간으로 표시하며 만료 시 00:00으로 고정합니다.
+    /// </summary>
+    static string FormatRemainingTime(DateTimeOffset? resetAt, DateTimeOffset now) {
+        if (!resetAt.HasValue) return "";
+
+        TimeSpan remaining = resetAt.Value > now ? resetAt.Value - now : TimeSpan.Zero;
+        return remaining.TotalHours >= 24
+            ? $"{remaining.Days}d {remaining.Hours}h"
+            : $"{remaining.Hours:00}:{remaining.Minutes:00}";
+    }
     
     void ConfigureRefreshTimer() {
         this._refreshTimer.Stop();
@@ -121,6 +163,9 @@ public class MainWindowVm:INotifyPropertyChanged {
             ProviderQuotaUrl = selectedProvider.QuotaUrl;
             if (selectedProvider.HasShortQuota || selectedProvider.HasLongQuota) {
                 var quota = await selectedProvider.GetCurrentQuotaAsync();
+                this._shortResetAt = selectedProvider.HasShortQuota ? quota.ShortResetAt : quota.LongResetAt;
+                this._longResetAt = selectedProvider.HasShortQuota && selectedProvider.HasLongQuota ? quota.LongResetAt : null;
+                UpdateRemainingTimes();
                 if (selectedProvider.HasShortQuota && selectedProvider.HasLongQuota) {
                     ShortQuotaLabel = selectedProvider.ShortQuotaLabel;
                     LongQuotaLabel = selectedProvider.LongQuotaLabel;
@@ -232,5 +277,8 @@ public class MainWindowVm:INotifyPropertyChanged {
         WeeklyQuotaRatio = 0;
         HourlyQuotaText = "";
         WeeklyQuotaText = "";
+        this._shortResetAt = null;
+        this._longResetAt = null;
+        UpdateRemainingTimes();
     }
 }

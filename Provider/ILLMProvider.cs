@@ -17,6 +17,8 @@ public interface ILlmProvider {
     public abstract class Quota {
         public double Short { get; set; }
         public double Long { get; set; }
+        public DateTimeOffset? ShortResetAt { get; set; }
+        public DateTimeOffset? LongResetAt { get; set; }
     }
     
     public abstract class Balance {
