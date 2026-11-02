@@ -155,6 +155,12 @@
                             </Style>
                         </TextBlock.Style>
                     </TextBlock>
+                    <TextBlock Text="{Binding RefreshProgressText}"
+                               ToolTip="갱신 후 경과 시간 / 현재 갱신 주기 (분)"
+                               Margin="6,0,0,0"
+                               FontSize="9"
+                               FontWeight="SemiBold"
+                               Foreground="#777777" />
                 </StackPanel>
                 
                 <!-- balance provider - no max balance (single text) -->

@@ -35,6 +35,7 @@ public class MainWindowVm:INotifyPropertyChanged {
     bool _refreshRequested;
     bool _refreshTimerEnabled;
     int _adaptiveRefreshIntervalMinutes = 1;
+    DateTimeOffset? _refreshScheduledAt;
     (string ProviderName, double? Short, double? Long, double? Third, double? Balance)? _lastUsage;
 
     public ObservableCollection<ProviderListItem> AvailableProviders { get; } = new();
@@ -46,6 +47,7 @@ public class MainWindowVm:INotifyPropertyChanged {
     public bool HasStatusMessage => IsRefreshing || !string.IsNullOrEmpty(ErrorMessage);
     public string StatusMessage => IsRefreshing ? "Refreshing.." : !string.IsNullOrEmpty(ErrorMessage) ? ErrorMessage : ThirdQuotaStatusText;
     public string StatusToolTip => HasStatusMessage ? StatusMessage : ThirdQuotaLabel;
+    public string RefreshProgressText { get; set; } = "";
     public double? ThirdQuotaValue { get; set; }
     public double? ThirdQuotaMax { get; set; }
     public string ThirdQuotaLabel { get; set; } = "";
@@ -118,9 +120,21 @@ public class MainWindowVm:INotifyPropertyChanged {
     }
 
     /// <summary>
-    /// API를 재호출하지 않고 매초 리셋까지 남은 시간을 갱신합니다.
+    /// API를 재호출하지 않고 매초 리셋까지 남은 시간과 갱신 경과 시간을 갱신합니다.
     /// </summary>
-    void CountdownTimer_Tick(object? sender, EventArgs e) => UpdateRemainingTimes();
+    void CountdownTimer_Tick(object? sender, EventArgs e) {
+        UpdateRemainingTimes();
+        UpdateRefreshProgress();
+    }
+
+    /// <summary>
+    /// 현재 갱신 예약 이후 경과한 시간과 실제 갱신 주기를 분 단위로 표시합니다.
+    /// </summary>
+    void UpdateRefreshProgress() {
+        RefreshProgressText = this._refreshScheduledAt is DateTimeOffset scheduledAt
+            ? $"{Math.Max(0, (int)(DateTimeOffset.UtcNow - scheduledAt).TotalMinutes)}/{(int)this._refreshTimer.Interval.TotalMinutes}"
+            : "";
+    }
 
     /// <summary>
     /// 두 윈도우의 남은 시간을 동일한 현재 시각으로 계산합니다.
@@ -167,6 +181,8 @@ public class MainWindowVm:INotifyPropertyChanged {
             ? Math.Min(this._adaptiveRefreshIntervalMinutes, maximumMinutes)
             : maximumMinutes;
         this._refreshTimer.Interval = TimeSpan.FromMinutes(intervalMinutes);
+        this._refreshScheduledAt = DateTimeOffset.UtcNow;
+        UpdateRefreshProgress();
         this._refreshTimer.Start();
     }
 
@@ -204,6 +220,8 @@ public class MainWindowVm:INotifyPropertyChanged {
         this._refreshTimer.Stop();
 
         if (this._providerList.Count == 0) {
+            this._refreshScheduledAt = null;
+            UpdateRefreshProgress();
             this._usageProviderName = null;
             ProviderName = "";
             ProviderQuotaUrl = "";
