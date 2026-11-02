@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -226,36 +227,40 @@ public sealed partial class AntigravityProvider : ILlmProvider {
     }
 
     /// <summary>
-    /// quota summary 또는 구형 model config 응답에서 각 모델 그룹의 가장 제한적인 잔여 비율을 선택합니다.
+    /// quota summary 또는 구형 model config 응답에서 각 모델 그룹의 가장 제한적인 잔여 비율과 초기화 시각을 선택합니다.
     /// Gemini 그룹의 hourly(5h) 창과 weekly 창을 개별적으로 집계하여 Short/Long에 매핑합니다.
     /// </summary>
     static AntigravityQuota? ParseQuota(JsonElement root) {
-        var geminiHourly = new List<double>();
-        var geminiWeekly = new List<double>();
-        var claudeHourly = new List<double>();
-        var claudeWeekly = new List<double>();
+        var geminiHourly = new List<QuotaWindow>();
+        var geminiWeekly = new List<QuotaWindow>();
+        var claudeHourly = new List<QuotaWindow>();
+        var claudeWeekly = new List<QuotaWindow>();
         CollectQuotaFractions(root, "", geminiHourly, geminiWeekly, claudeHourly, claudeWeekly);
 
         if (geminiHourly.Count == 0 || geminiWeekly.Count == 0) {
             return null;
         }
 
+        QuotaWindow hourly = geminiHourly.OrderBy(window => window.Fraction).ThenByDescending(window => window.ResetAt).First();
+        QuotaWindow weekly = geminiWeekly.OrderBy(window => window.Fraction).ThenByDescending(window => window.ResetAt).First();
         return new AntigravityQuota {
-            Short = Math.Clamp(geminiHourly.Min() * 100, 0, 100),
-            Long = Math.Clamp(geminiWeekly.Min() * 100, 0, 100)
+            Short = Math.Clamp(hourly.Fraction * 100, 0, 100),
+            Long = Math.Clamp(weekly.Fraction * 100, 0, 100),
+            ShortResetAt = hourly.ResetAt,
+            LongResetAt = weekly.ResetAt
         };
     }
 
     /// <summary>
-    /// JSON 트리를 순회하며 현재 모델 또는 그룹 이름과 창 크기에 속한 remainingFraction 값을 수집합니다.
+    /// JSON 트리를 순회하며 모델 그룹과 창 크기에 속한 잔여 비율 및 초기화 시각을 함께 수집합니다.
     /// </summary>
     static void CollectQuotaFractions(
         JsonElement element,
         string inheritedName,
-        ICollection<double> geminiHourly,
-        ICollection<double> geminiWeekly,
-        ICollection<double> claudeHourly,
-        ICollection<double> claudeWeekly) {
+        ICollection<QuotaWindow> geminiHourly,
+        ICollection<QuotaWindow> geminiWeekly,
+        ICollection<QuotaWindow> claudeHourly,
+        ICollection<QuotaWindow> claudeWeekly) {
         if (element.ValueKind == JsonValueKind.Array) {
             foreach (JsonElement item in element.EnumerateArray()) {
                 CollectQuotaFractions(item, inheritedName, geminiHourly, geminiWeekly, claudeHourly, claudeWeekly);
@@ -290,10 +295,10 @@ public sealed partial class AntigravityProvider : ILlmProvider {
         }
 
         bool isWeekly = IsWeeklyWindow(element, localName);
-        ICollection<double>? bucket = GroupBucket(
+        ICollection<QuotaWindow>? bucket = GroupBucket(
             currentName, isWeekly, geminiHourly, geminiWeekly, claudeHourly, claudeWeekly);
         if (bucket is not null) {
-            bucket.Add(fraction);
+            bucket.Add(new QuotaWindow(fraction, ReadResetAt(element)));
         }
 
         foreach (JsonProperty property in element.EnumerateObject()) {
@@ -333,15 +338,15 @@ public sealed partial class AntigravityProvider : ILlmProvider {
     }
 
     /// <summary>
-    /// 모델 그룹과 창 크기에 따라 해당 잔여 비율 목록을 반환합니다. 그룹에 속하지 않으면 null.
+    /// 모델 그룹과 창 크기에 따라 해당 할당량 창 목록을 반환합니다. 그룹에 속하지 않으면 null.
     /// </summary>
-    static ICollection<double>? GroupBucket(
+    static ICollection<QuotaWindow>? GroupBucket(
         string currentName,
         bool isWeekly,
-        ICollection<double> geminiHourly,
-        ICollection<double> geminiWeekly,
-        ICollection<double> claudeHourly,
-        ICollection<double> claudeWeekly) {
+        ICollection<QuotaWindow> geminiHourly,
+        ICollection<QuotaWindow> geminiWeekly,
+        ICollection<QuotaWindow> claudeHourly,
+        ICollection<QuotaWindow> claudeWeekly) {
         if (currentName.Contains("gemini", StringComparison.OrdinalIgnoreCase)) {
             return isWeekly ? geminiWeekly : geminiHourly;
         }
@@ -393,6 +398,29 @@ public sealed partial class AntigravityProvider : ILlmProvider {
     }
 
     /// <summary>
+    /// 잔여 비율이 있는 객체 또는 remaining/quotaInfo 하위 객체의 초기화 시각을 UTC로 읽습니다.
+    /// </summary>
+    static DateTimeOffset? ReadResetAt(JsonElement element) {
+        if (element.TryGetProperty("remainingFraction", out _)) {
+            string resetTime = ReadFirstString(element, "resetTime");
+            return DateTimeOffset.TryParse(resetTime, CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out DateTimeOffset resetAt)
+                ? resetAt
+                : null;
+        }
+
+        foreach (string containerName in new[] { "remaining", "quotaInfo" }) {
+            if (element.TryGetProperty(containerName, out JsonElement container)
+                && container.ValueKind == JsonValueKind.Object
+                && container.TryGetProperty("remainingFraction", out _)) {
+                return ReadResetAt(container);
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
     /// 지정된 후보 속성 중 첫 문자열 값을 반환합니다.
     /// </summary>
     static string ReadFirstString(JsonElement element, params string[] propertyNames) {
@@ -434,6 +462,8 @@ public sealed partial class AntigravityProvider : ILlmProvider {
         ref int returnLength);
 
     public sealed class AntigravityQuota : ILlmProvider.Quota;
+
+    sealed record QuotaWindow(double Fraction, DateTimeOffset? ResetAt);
 
     sealed record AntigravityProcess(int ProcessId, string CsrfToken);
 

@@ -30,7 +30,7 @@ public sealed class CommandCodeProvider(HttpClient? httpClient = null) : ILlmPro
     public bool HasBalance => false;
 
     /// <summary>
-    /// API 키로 credits API를 호출해 fiveHour/weekly 창의 잔여 사용률을 조회합니다.
+    /// API 키로 credits API를 호출해 fiveHour/weekly 창의 잔여 사용률과 초기화 시각을 조회합니다.
     /// </summary>
     public async Task<ILlmProvider.Quota> GetCurrentQuotaAsync() {
         string apiKey = ResolveApiKey(App.Settings.CommandCodeAuthJsonPath);
@@ -61,7 +61,9 @@ public sealed class CommandCodeProvider(HttpClient? httpClient = null) : ILlmPro
 
             return new CommandCodeQuota {
                 Short = RemainingPercent(fiveHour),
-                Long = RemainingPercent(weekly)
+                Long = RemainingPercent(weekly),
+                ShortResetAt = GetResetAt(fiveHour),
+                LongResetAt = GetResetAt(weekly)
             };
         }
         catch (Exception exception) when (exception is InvalidOperationException) {
@@ -137,6 +139,15 @@ public sealed class CommandCodeProvider(HttpClient? httpClient = null) : ILlmPro
     }
 
     /// <summary>
+    /// 밀리초 단위의 Unix 초기화 시각을 변환하며 미시작 창이나 유효하지 않은 값은 표시하지 않습니다.
+    /// </summary>
+    static DateTimeOffset? GetResetAt(CommandCodeLimitWindow window) {
+        return window.ResetAt is > 0 and <= 253402300799999
+            ? DateTimeOffset.FromUnixTimeMilliseconds(window.ResetAt.Value)
+            : null;
+    }
+
+    /// <summary>
     /// 오류 응답 본문을 한 줄 짧은 문자열로 줄입니다.
     /// </summary>
     static string TrimError(string errorText) {
@@ -169,5 +180,8 @@ public sealed class CommandCodeProvider(HttpClient? httpClient = null) : ILlmPro
 
         [JsonPropertyName("cap")]
         public double Cap { get; init; }
+
+        [JsonPropertyName("resetAt")]
+        public long? ResetAt { get; init; }
     }
 }
