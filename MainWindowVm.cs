@@ -28,7 +28,7 @@ public class MainWindowVm:INotifyPropertyChanged {
     readonly List<ILlmProvider> _providerList = new();
     DateTimeOffset? _shortResetAt;
     DateTimeOffset? _longResetAt;
-    bool _isRefreshing;
+    string? _usageProviderName;
     int _selectedProviderIndex;
     string? _pendingProviderName;
     bool _refreshRequested;
@@ -38,6 +38,8 @@ public class MainWindowVm:INotifyPropertyChanged {
     public string ProviderName { get; set; } = "";
     public string ProviderQuotaUrl { get; set; } = "";
     public string ErrorMessage { get; set; } = "";
+    public bool IsRefreshing { get; set; }
+    public string StatusMessage => IsRefreshing ? "Refreshing.." : ErrorMessage;
     public string CreditText { get; set; } = "";
     public double MaxBalance { get; set; } = 0;
     public double BalanceRatio { get; set; } = 0;
@@ -147,17 +149,15 @@ public class MainWindowVm:INotifyPropertyChanged {
 
 
     async Task RefreshCreditAsync() {
-        if (this._isRefreshing) {
+        if (IsRefreshing) {
             this._refreshRequested = true;
             return;
         }
 
         this._refreshRequested = false;
 
-        CurrentMode = UiMode.Loading;
-        CreditText = "조회 중...";
-
         if (this._providerList.Count == 0) {
+            this._usageProviderName = null;
             ProviderName = "";
             ProviderQuotaUrl = "";
             ErrorMessage = "프로바이더 미사용";
@@ -167,14 +167,17 @@ public class MainWindowVm:INotifyPropertyChanged {
             return;
         }
 
-        this._isRefreshing = true;
+        IsRefreshing = true;
         ErrorMessage = "";
-        ClearUsageDisplay();
 
         try {
             var selectedProvider = this._providerList[this._selectedProviderIndex];
             ProviderName = selectedProvider.Name;
             ProviderQuotaUrl = selectedProvider.QuotaUrl;
+            if (this._usageProviderName != selectedProvider.Name) {
+                InitializeUsageDisplay(selectedProvider);
+                this._usageProviderName = selectedProvider.Name;
+            }
             if (selectedProvider.HasShortQuota || selectedProvider.HasLongQuota) {
                 var quota = await selectedProvider.GetCurrentQuotaAsync();
                 this._shortResetAt = selectedProvider.HasShortQuota ? quota.ShortResetAt : quota.LongResetAt;
@@ -206,12 +209,13 @@ public class MainWindowVm:INotifyPropertyChanged {
                 CurrentMode = balance.Max > 0 ? UiMode.Balance : UiMode.BalanceWithoutMax;
             }
         } catch(Exception e) {
+            this._usageProviderName = null;
             ErrorMessage = e.Message;
             CreditText = "-";
             ClearUsageDisplay();
             CurrentMode = UiMode.BalanceWithoutMax;
         } finally {
-            this._isRefreshing = false;
+            IsRefreshing = false;
             if (this._pendingProviderName is string pendingProviderName) {
                 this._pendingProviderName = null;
                 await SelectProviderAsync(pendingProviderName);
@@ -235,7 +239,7 @@ public class MainWindowVm:INotifyPropertyChanged {
     async Task SelectProviderAsync(string providerName) {
         int index = this._providerList.FindIndex(provider => provider.Name == providerName);
         if (index < 0) return;
-        if (this._isRefreshing) {
+        if (IsRefreshing) {
             this._pendingProviderName = providerName;
             return;
         }
@@ -315,6 +319,21 @@ public class MainWindowVm:INotifyPropertyChanged {
         } catch (Exception exception) {
             ErrorMessage = exception.Message;
         }
+    }
+
+    /// <summary>
+    /// 최초 조회 또는 프로바이더 전환 시 사용량 게이지를 0%로 초기화합니다.
+    /// </summary>
+    void InitializeUsageDisplay(ILlmProvider provider) {
+        ClearUsageDisplay();
+        CreditText = "";
+        HourlyQuotaText = "0%";
+        WeeklyQuotaText = "0%";
+        ShortQuotaLabel = provider.HasShortQuota ? provider.ShortQuotaLabel : provider.LongQuotaLabel;
+        LongQuotaLabel = provider.LongQuotaLabel;
+        CurrentMode = provider.HasShortQuota && provider.HasLongQuota
+            ? UiMode.DualQuota
+            : provider.HasShortQuota || provider.HasLongQuota ? UiMode.SingleQouta : UiMode.Loading;
     }
 
     void ClearUsageDisplay() {
