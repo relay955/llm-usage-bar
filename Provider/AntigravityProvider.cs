@@ -13,11 +13,17 @@ using LLMUsageBar.Module;
 
 namespace LLMUsageBar.Provider;
 
+public enum AntigravityModelGroup {
+    ClaudeGpt,
+    Gemini,
+    GeminiFrontier
+}
+
 /// <summary>
 /// 실행 중인 Antigravity의 로컬 language server에서 모델 그룹별 잔여 할당량을 조회합니다.
 /// Google OAuth 토큰을 외부 프로세스로 복사하거나 원격 API에 직접 전송하지 않습니다.
 /// </summary>
-public sealed partial class AntigravityProvider : ILlmProvider {
+public sealed partial class AntigravityProvider(AntigravityModelGroup modelGroup) : ILlmProvider {
     const string ServicePath = "exa.language_server_pb.LanguageServerService";
     const string RequestJson = "{\"metadata\":{\"ideName\":\"antigravity\",\"extensionName\":\"antigravity\",\"locale\":\"en\",\"ideVersion\":\"unknown\"}}";
 
@@ -27,16 +33,21 @@ public sealed partial class AntigravityProvider : ILlmProvider {
         "GetCommandModelConfigs"
     ];
 
-    public string Name => "Antigravity";
+    public string Name => modelGroup switch {
+        AntigravityModelGroup.ClaudeGpt => "Antigravity Claude/GPT",
+        AntigravityModelGroup.Gemini => "Antigravity Gemini",
+        AntigravityModelGroup.GeminiFrontier => "Antigravity Gemini Frontier",
+        _ => throw new ArgumentOutOfRangeException(nameof(modelGroup))
+    };
     public string QuotaUrl => "https://antigravity.google/settings";
-    public bool HasShortQuota => true;
+    public bool HasShortQuota => modelGroup != AntigravityModelGroup.GeminiFrontier;
     public bool HasLongQuota => true;
-    public string ShortQuotaLabel => "hourly";
+    public string ShortQuotaLabel => "5h";
     public string LongQuotaLabel => "weekly";
     public bool HasBalance => false;
 
     /// <summary>
-    /// Antigravity language server의 loopback 포트와 CSRF 토큰을 자동 탐색하고 Gemini/Claude 잔여 할당량을 조회합니다.
+    /// Antigravity language server의 loopback 포트와 CSRF 토큰을 자동 탐색하고 선택한 모델 그룹의 잔여 할당량을 조회합니다.
     /// </summary>
     public async Task<ILlmProvider.Quota> GetCurrentQuotaAsync() {
         IReadOnlyList<AntigravityProcess> processes = FindAntigravityProcesses();
@@ -191,7 +202,7 @@ public sealed partial class AntigravityProvider : ILlmProvider {
     /// <summary>
     /// 로컬 서버의 quota 엔드포인트를 순서대로 호출하고 해석 가능한 첫 응답을 반환합니다.
     /// </summary>
-    static async Task<AntigravityQuota?> TryReadQuotaAsync(int port, string csrfToken) {
+    async Task<AntigravityQuota?> TryReadQuotaAsync(int port, string csrfToken) {
         using var handler = new HttpClientHandler {
             ServerCertificateCustomValidationCallback = (request, _, _, _) =>
                 request.RequestUri?.IsLoopback == true
@@ -227,43 +238,40 @@ public sealed partial class AntigravityProvider : ILlmProvider {
     }
 
     /// <summary>
-    /// quota summary 또는 구형 model config 응답에서 각 모델 그룹의 가장 제한적인 잔여 비율과 초기화 시각을 선택합니다.
-    /// Gemini 그룹의 hourly(5h) 창과 weekly 창을 개별적으로 집계하여 Short/Long에 매핑합니다.
+    /// 선택한 모델 그룹의 가장 제한적인 잔여 비율과 초기화 시각을 창별로 선택합니다.
+    /// Frontier는 주간 창만 표시하며 일반 Gemini 및 Claude/GPT는 5시간과 주간 창을 표시합니다.
     /// </summary>
-    static AntigravityQuota? ParseQuota(JsonElement root) {
-        var geminiHourly = new List<QuotaWindow>();
-        var geminiWeekly = new List<QuotaWindow>();
-        var claudeHourly = new List<QuotaWindow>();
-        var claudeWeekly = new List<QuotaWindow>();
-        CollectQuotaFractions(root, "", geminiHourly, geminiWeekly, claudeHourly, claudeWeekly);
+    AntigravityQuota? ParseQuota(JsonElement root) {
+        var hourlyWindows = new List<QuotaWindow>();
+        var weeklyWindows = new List<QuotaWindow>();
+        CollectQuotaWindows(root, "", false, hourlyWindows, weeklyWindows);
 
-        if (geminiHourly.Count == 0 || geminiWeekly.Count == 0) {
+        if ((HasShortQuota && hourlyWindows.Count == 0) || weeklyWindows.Count == 0) {
             return null;
         }
 
-        QuotaWindow hourly = geminiHourly.OrderBy(window => window.Fraction).ThenByDescending(window => window.ResetAt).First();
-        QuotaWindow weekly = geminiWeekly.OrderBy(window => window.Fraction).ThenByDescending(window => window.ResetAt).First();
+        QuotaWindow? hourly = hourlyWindows.OrderBy(window => window.Fraction).ThenByDescending(window => window.ResetAt).FirstOrDefault();
+        QuotaWindow weekly = weeklyWindows.OrderBy(window => window.Fraction).ThenByDescending(window => window.ResetAt).First();
         return new AntigravityQuota {
-            Short = Math.Clamp(hourly.Fraction * 100, 0, 100),
+            Short = hourly is null ? 0 : Math.Clamp(hourly.Fraction * 100, 0, 100),
             Long = Math.Clamp(weekly.Fraction * 100, 0, 100),
-            ShortResetAt = hourly.ResetAt,
+            ShortResetAt = HasShortQuota ? hourly?.ResetAt : null,
             LongResetAt = weekly.ResetAt
         };
     }
 
     /// <summary>
-    /// JSON 트리를 순회하며 모델 그룹과 창 크기에 속한 잔여 비율 및 초기화 시각을 함께 수집합니다.
+    /// JSON 트리를 순회하며 선택한 모델 그룹의 잔여 비율과 초기화 시각을 수집하고 상위 객체의 창 구분을 유지합니다.
     /// </summary>
-    static void CollectQuotaFractions(
+    void CollectQuotaWindows(
         JsonElement element,
         string inheritedName,
-        ICollection<QuotaWindow> geminiHourly,
-        ICollection<QuotaWindow> geminiWeekly,
-        ICollection<QuotaWindow> claudeHourly,
-        ICollection<QuotaWindow> claudeWeekly) {
+        bool inheritedWeekly,
+        ICollection<QuotaWindow> hourlyWindows,
+        ICollection<QuotaWindow> weeklyWindows) {
         if (element.ValueKind == JsonValueKind.Array) {
             foreach (JsonElement item in element.EnumerateArray()) {
-                CollectQuotaFractions(item, inheritedName, geminiHourly, geminiWeekly, claudeHourly, claudeWeekly);
+                CollectQuotaWindows(item, inheritedName, inheritedWeekly, hourlyWindows, weeklyWindows);
             }
             return;
         }
@@ -287,22 +295,18 @@ public sealed partial class AntigravityProvider : ILlmProvider {
             ? inheritedName
             : $"{inheritedName} {localName}".Trim();
 
-        if (!TryReadRemainingFraction(element, out double fraction)) {
-            foreach (JsonProperty property in element.EnumerateObject()) {
-                CollectQuotaFractions(property.Value, currentName, geminiHourly, geminiWeekly, claudeHourly, claudeWeekly);
+        bool isWeekly = inheritedWeekly || IsWeeklyWindow(element, localName);
+        string bucketId = ReadFirstString(element, "bucketId");
+        if (TryReadRemainingFraction(element, out double fraction)) {
+            if (MatchesModelGroup(string.IsNullOrWhiteSpace(bucketId) ? currentName : bucketId)) {
+                ICollection<QuotaWindow> bucket = isWeekly ? weeklyWindows : hourlyWindows;
+                bucket.Add(new QuotaWindow(fraction, ReadResetAt(element)));
             }
             return;
         }
 
-        bool isWeekly = IsWeeklyWindow(element, localName);
-        ICollection<QuotaWindow>? bucket = GroupBucket(
-            currentName, isWeekly, geminiHourly, geminiWeekly, claudeHourly, claudeWeekly);
-        if (bucket is not null) {
-            bucket.Add(new QuotaWindow(fraction, ReadResetAt(element)));
-        }
-
         foreach (JsonProperty property in element.EnumerateObject()) {
-            CollectQuotaFractions(property.Value, currentName, geminiHourly, geminiWeekly, claudeHourly, claudeWeekly);
+            CollectQuotaWindows(property.Value, currentName, isWeekly, hourlyWindows, weeklyWindows);
         }
     }
 
@@ -338,25 +342,22 @@ public sealed partial class AntigravityProvider : ILlmProvider {
     }
 
     /// <summary>
-    /// 모델 그룹과 창 크기에 따라 해당 할당량 창 목록을 반환합니다. 그룹에 속하지 않으면 null.
+    /// 버킷 식별자 또는 모델 이름으로 Frontier를 먼저 구분하여 일반 Gemini와 섞이지 않도록 합니다.
     /// </summary>
-    static ICollection<QuotaWindow>? GroupBucket(
-        string currentName,
-        bool isWeekly,
-        ICollection<QuotaWindow> geminiHourly,
-        ICollection<QuotaWindow> geminiWeekly,
-        ICollection<QuotaWindow> claudeHourly,
-        ICollection<QuotaWindow> claudeWeekly) {
-        if (currentName.Contains("gemini", StringComparison.OrdinalIgnoreCase)) {
-            return isWeekly ? geminiWeekly : geminiHourly;
+    bool MatchesModelGroup(string identifier) {
+        if (identifier.Contains("argon", StringComparison.OrdinalIgnoreCase)
+            || identifier.Contains("frontier", StringComparison.OrdinalIgnoreCase)) {
+            return modelGroup == AntigravityModelGroup.GeminiFrontier;
         }
 
-        if (currentName.Contains("claude", StringComparison.OrdinalIgnoreCase)
-            || currentName.Contains("gpt", StringComparison.OrdinalIgnoreCase)) {
-            return isWeekly ? claudeWeekly : claudeHourly;
+        if (identifier.StartsWith("3p-", StringComparison.OrdinalIgnoreCase)
+            || identifier.Contains("claude", StringComparison.OrdinalIgnoreCase)
+            || identifier.Contains("gpt", StringComparison.OrdinalIgnoreCase)) {
+            return modelGroup == AntigravityModelGroup.ClaudeGpt;
         }
 
-        return null;
+        return modelGroup == AntigravityModelGroup.Gemini
+            && identifier.Contains("gemini", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>

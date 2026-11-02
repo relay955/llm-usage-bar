@@ -4,10 +4,12 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
-             d:DesignHeight="120"
+             d:DesignHeight="200"
              d:DesignWidth="520">
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -18,7 +20,7 @@
 
         <TextBlock Grid.Row="0"
                    Grid.Column="0"
-                   Text="Antigravity 사용"
+                   Text="Claude/GPT 사용"
                    Foreground="#FFE8E8E8"
                    FontSize="13"
                    VerticalAlignment="Center" />
@@ -27,9 +29,39 @@
                   Grid.Column="1"
                   HorizontalAlignment="Left"
                   VerticalAlignment="Center"
-                  IsChecked="{Binding PendingAppSettings.UseAntigravity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                  IsChecked="{Binding PendingAppSettings.UseAntigravityClaude, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
         <TextBlock Grid.Row="1"
+                   Grid.Column="0"
+                   Margin="0,16,0,0"
+                   Text="Gemini 사용"
+                   Foreground="#FFE8E8E8"
+                   FontSize="13"
+                   VerticalAlignment="Center" />
+
+        <CheckBox Grid.Row="1"
+                  Grid.Column="1"
+                  Margin="0,16,0,0"
+                  HorizontalAlignment="Left"
+                  VerticalAlignment="Center"
+                  IsChecked="{Binding PendingAppSettings.UseAntigravityGemini, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+        <TextBlock Grid.Row="2"
+                   Grid.Column="0"
+                   Margin="0,16,0,0"
+                   Text="Gemini Frontier 사용"
+                   Foreground="#FFE8E8E8"
+                   FontSize="13"
+                   VerticalAlignment="Center" />
+
+        <CheckBox Grid.Row="2"
+                  Grid.Column="1"
+                  Margin="0,16,0,0"
+                  HorizontalAlignment="Left"
+                  VerticalAlignment="Center"
+                  IsChecked="{Binding PendingAppSettings.UseAntigravityFrontier, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+        <TextBlock Grid.Row="3"
                    Grid.ColumnSpan="2"
                    Margin="0,16,0,0"
                    Text="실행 중인 Antigravity의 로컬 language server에서 할당량을 조회합니다."

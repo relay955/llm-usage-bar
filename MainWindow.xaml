@@ -169,9 +169,17 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="36" />
                             <ColumnDefinition Width="100" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="{Binding ShortQuotaLabel}"
                                    FontSize="10"
+                                   FontWeight="SemiBold"
+                                   Foreground="#555555"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="2"
+                                   Text="{Binding HourlyRemainingTime}"
+                                   Margin="5,0,0,0"
+                                   FontSize="9"
                                    FontWeight="SemiBold"
                                    Foreground="#555555"
                                    VerticalAlignment="Center" />

@@ -14,7 +14,9 @@ public sealed class AppSettings:INotifyPropertyChanged {
     public bool RunAtStartup { get; set; }
     public bool UseCodex { get; set; }
     public string CodexAuthJsonPath { get; set; } = AppSettingsStore.DefaultCodexAuthJsonPath;
-    public bool UseAntigravity { get; set; }
+    public bool UseAntigravityClaude { get; set; }
+    public bool UseAntigravityGemini { get; set; }
+    public bool UseAntigravityFrontier { get; set; }
     public bool UseOpenRouter { get; set; }
     public string OpenRouterApiKey { get; set; } = "";
     public bool UseNanoGpt { get; set; }
@@ -40,6 +42,9 @@ public static class AppSettingsStore {
     private const string UseCodexKey = "useCodex";
     private const string CodexAuthJsonPathKey = "CodexAuthJsonPath";
     private const string UseAntigravityKey = "useAntigravity";
+    const string UseAntigravityClaudeKey = "useAntigravityClaude";
+    const string UseAntigravityGeminiKey = "useAntigravityGemini";
+    const string UseAntigravityFrontierKey = "useAntigravityFrontier";
     private const string UseOpenRouterKey = "useOpenRouter";
     private const string OpenRouterApiKeyKey = "OpenRouterApiKey";
     private const string UseNanoGptKey = "useNanoGpt";
@@ -83,7 +88,9 @@ public static class AppSettingsStore {
             RunAtStartup = ReadBool(table, RunAtStartupKey, false),
             UseCodex = ReadBool(table, UseCodexKey, false),
             CodexAuthJsonPath = ReadString(table, CodexAuthJsonPathKey, DefaultCodexAuthJsonPath),
-            UseAntigravity = ReadBool(table, UseAntigravityKey, false),
+            UseAntigravityClaude = ReadBool(table, UseAntigravityClaudeKey, ReadBool(table, UseAntigravityKey, false)),
+            UseAntigravityGemini = ReadBool(table, UseAntigravityGeminiKey, ReadBool(table, UseAntigravityKey, false)),
+            UseAntigravityFrontier = ReadBool(table, UseAntigravityFrontierKey, ReadBool(table, UseAntigravityKey, false)),
             UseOpenRouter = ReadBool(table, UseOpenRouterKey, false),
             OpenRouterApiKey = ReadString(table, OpenRouterApiKeyKey, ""),
             UseNanoGpt = ReadBool(table, UseNanoGptKey, false),
@@ -111,7 +118,9 @@ public static class AppSettingsStore {
             [RunAtStartupKey] = settings.RunAtStartup,
             [UseCodexKey] = settings.UseCodex,
             [CodexAuthJsonPathKey] = settings.CodexAuthJsonPath,
-            [UseAntigravityKey] = settings.UseAntigravity,
+            [UseAntigravityClaudeKey] = settings.UseAntigravityClaude,
+            [UseAntigravityGeminiKey] = settings.UseAntigravityGemini,
+            [UseAntigravityFrontierKey] = settings.UseAntigravityFrontier,
             [UseOpenRouterKey] = settings.UseOpenRouter,
             [OpenRouterApiKeyKey] = settings.OpenRouterApiKey,
             [UseNanoGptKey] = settings.UseNanoGpt,
