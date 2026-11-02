@@ -32,6 +32,9 @@ public class MainWindowVm:INotifyPropertyChanged {
     int _selectedProviderIndex;
     string? _pendingProviderName;
     bool _refreshRequested;
+    bool _refreshTimerEnabled;
+    int _adaptiveRefreshIntervalMinutes = 1;
+    (string ProviderName, double? Short, double? Long, double? Balance)? _lastUsage;
 
     public ObservableCollection<ProviderListItem> AvailableProviders { get; } = new();
 
@@ -97,6 +100,7 @@ public class MainWindowVm:INotifyPropertyChanged {
     /// 창이 닫히면 API 갱신 및 남은 시간 갱신 타이머를 중지합니다.
     /// </summary>
     public void StopTimer() {
+        this._refreshTimerEnabled = false;
         this._refreshTimer.Stop();
         this._countdownTimer.Stop();
     }
@@ -127,12 +131,42 @@ public class MainWindowVm:INotifyPropertyChanged {
             : $"{remaining.Hours:00}:{remaining.Minutes:00}";
     }
     
+    /// <summary>
+    /// 설정에 맞춰 갱신 간격을 초기화하고 자동갱신을 시작합니다.
+    /// </summary>
     void ConfigureRefreshTimer() {
-        this._refreshTimer.Stop();
-        this._refreshTimer.Interval = TimeSpan.FromMinutes(Math.Max(1, App.Settings.RefreshIntervalMinutes));
+        this._refreshTimerEnabled = true;
+        this._adaptiveRefreshIntervalMinutes = 1;
+        this._lastUsage = null;
         this._refreshTimer.Tick -= RefreshTimer_Tick;
         this._refreshTimer.Tick += RefreshTimer_Tick;
+        ScheduleNextRefresh();
+    }
+
+    /// <summary>
+    /// 조회 완료 시점부터 다음 갱신을 예약하며 설정된 최대 주기를 넘지 않게 합니다.
+    /// </summary>
+    void ScheduleNextRefresh() {
+        this._refreshTimer.Stop();
+        if (!this._refreshTimerEnabled) return;
+
+        int maximumMinutes = Math.Max(1, App.Settings.RefreshIntervalMinutes);
+        int intervalMinutes = App.Settings.UseAdaptiveRefresh
+            ? Math.Min(this._adaptiveRefreshIntervalMinutes, maximumMinutes)
+            : maximumMinutes;
+        this._refreshTimer.Interval = TimeSpan.FromMinutes(intervalMinutes);
         this._refreshTimer.Start();
+    }
+
+    /// <summary>
+    /// 원본 사용량이 바뀌면 1분으로 되돌리고 같으면 최대 주기까지 간격을 두 배로 늘립니다.
+    /// </summary>
+    void UpdateAdaptiveRefreshInterval(string providerName, double? shortUsage, double? longUsage, double? balance) {
+        var usage = (ProviderName: providerName, Short: shortUsage, Long: longUsage, Balance: balance);
+        this._adaptiveRefreshIntervalMinutes = this._lastUsage.HasValue && this._lastUsage.Value.Equals(usage)
+            ? (int)Math.Min((long)this._adaptiveRefreshIntervalMinutes * 2, Math.Max(1, App.Settings.RefreshIntervalMinutes))
+            : 1;
+        this._lastUsage = usage;
     }
 
     async void RefreshTimer_Tick(object? sender, EventArgs e) => await RefreshCreditAsync();
@@ -155,6 +189,7 @@ public class MainWindowVm:INotifyPropertyChanged {
         }
 
         this._refreshRequested = false;
+        this._refreshTimer.Stop();
 
         if (this._providerList.Count == 0) {
             this._usageProviderName = null;
@@ -201,14 +236,19 @@ public class MainWindowVm:INotifyPropertyChanged {
                     HourlyQuotaText = $"{ratio * 100:0.#}%";
                     CurrentMode = UiMode.SingleQouta;
                 }
+                UpdateAdaptiveRefreshInterval(selectedProvider.Name,
+                    selectedProvider.HasShortQuota ? quota.Short : null,
+                    selectedProvider.HasLongQuota ? quota.Long : null, null);
             } else {
                 var balance = await selectedProvider.GetCurrentBalanceAsync(App.Settings);
                 this.MaxBalance = balance.Max;
                 this.BalanceRatio = balance.Max > 0 ? balance.Remain / balance.Max : 0;
                 CreditText = $"${balance.Remain:0.00}";
                 CurrentMode = balance.Max > 0 ? UiMode.Balance : UiMode.BalanceWithoutMax;
+                UpdateAdaptiveRefreshInterval(selectedProvider.Name, null, null, balance.Remain);
             }
         } catch(Exception e) {
+            this._adaptiveRefreshIntervalMinutes = 1;
             this._usageProviderName = null;
             ErrorMessage = e.Message;
             CreditText = "-";
@@ -221,6 +261,7 @@ public class MainWindowVm:INotifyPropertyChanged {
                 await SelectProviderAsync(pendingProviderName);
             }
             if (this._refreshRequested) await RefreshCreditAsync();
+            ScheduleNextRefresh();
         }
     }
 

@@ -10,7 +10,8 @@ namespace LLMUsageBar.Module;
 
 public sealed class AppSettings:INotifyPropertyChanged {
     public event PropertyChangedEventHandler? PropertyChanged;
-    public int RefreshIntervalMinutes { get; set; }
+    public int RefreshIntervalMinutes { get; set; } = 60;
+    public bool UseAdaptiveRefresh { get; set; } = true;
     public bool RunAtStartup { get; set; }
     public bool UseCodex { get; set; }
     public string CodexAuthJsonPath { get; set; } = AppSettingsStore.DefaultCodexAuthJsonPath;
@@ -38,6 +39,7 @@ public sealed class AppSettings:INotifyPropertyChanged {
 public static class AppSettingsStore {
     private const string SettingsFileName = "settings.toml";
     private const string RefreshIntervalKey = "refresh_interval_minutes";
+    const string UseAdaptiveRefreshKey = "use_adaptive_refresh";
     private const string RunAtStartupKey = "run_at_startup";
     private const string UseCodexKey = "useCodex";
     private const string CodexAuthJsonPathKey = "CodexAuthJsonPath";
@@ -84,7 +86,8 @@ public static class AppSettingsStore {
         TomlTable table = TomlSerializer.Deserialize<TomlTable>(content) ?? new TomlTable();
 
         return new AppSettings {
-            RefreshIntervalMinutes = ReadPositiveInt(table, RefreshIntervalKey, 10),
+            RefreshIntervalMinutes = ReadPositiveInt(table, RefreshIntervalKey, 60),
+            UseAdaptiveRefresh = ReadBool(table, UseAdaptiveRefreshKey, true),
             RunAtStartup = ReadBool(table, RunAtStartupKey, false),
             UseCodex = ReadBool(table, UseCodexKey, false),
             CodexAuthJsonPath = ReadString(table, CodexAuthJsonPathKey, DefaultCodexAuthJsonPath),
@@ -115,6 +118,7 @@ public static class AppSettingsStore {
 
         var table = new TomlTable {
             [RefreshIntervalKey] = Math.Max(1, settings.RefreshIntervalMinutes),
+            [UseAdaptiveRefreshKey] = settings.UseAdaptiveRefresh,
             [RunAtStartupKey] = settings.RunAtStartup,
             [UseCodexKey] = settings.UseCodex,
             [CodexAuthJsonPathKey] = settings.CodexAuthJsonPath,

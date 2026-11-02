@@ -4,10 +4,12 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
-             d:DesignHeight="120"
+             d:DesignHeight="200"
              d:DesignWidth="520">
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -38,6 +40,22 @@
                    VerticalAlignment="Center" />
 
         <CheckBox Grid.Row="1"
+                  Grid.ColumnSpan="3"
+                  Margin="0,20,0,0"
+                  Content="적응형 갱신 활성화"
+                  Foreground="#FFE8E8E8"
+                  FontSize="13"
+                  IsChecked="{Binding PendingAppSettings.UseAdaptiveRefresh, Mode=TwoWay}" />
+
+        <TextBlock Grid.Row="2"
+                   Grid.ColumnSpan="3"
+                   Margin="0,8,0,0"
+                   Text="사용량이 변경되었다면 1분 뒤 갱신합니다. 차이가 없으면 이후 간격을 두 배씩 늘리며, 최대 자동갱신 주기까지 증가합니다."
+                   TextWrapping="Wrap"
+                   Foreground="#FF9CA3AF"
+                   FontSize="12" />
+
+        <CheckBox Grid.Row="3"
                   Grid.ColumnSpan="3"
                   Margin="0,20,0,0"
                   Content="프로그램 시작시 자동실행"
