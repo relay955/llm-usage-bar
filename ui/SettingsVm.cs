@@ -13,6 +13,7 @@ public class SettingsVm:INotifyPropertyChanged {
 
     public int SelectedTabIndex { get; set; }
     public AppSettings PendingAppSettings { get; set; }
+    public string CommandCodeMonthlyMaxCreditsText { get; set; }
     public string ValidationMessage { get; set; } = "";
 
     public ICommand SaveCommand { get; }
@@ -20,6 +21,7 @@ public class SettingsVm:INotifyPropertyChanged {
 
     public SettingsVm() {
         PendingAppSettings = AppSettingsStore.Load();
+        CommandCodeMonthlyMaxCreditsText = PendingAppSettings.CommandCodeMonthlyMaxCredits.ToString();
 
         SaveCommand = new Command(OnSave);
         CancelCommand = new Command(OnCancel);
@@ -30,6 +32,15 @@ public class SettingsVm:INotifyPropertyChanged {
             ValidationMessage = "자동갱신 주기는 1 이상의 숫자로 입력해주세요.";
             return;
         }
+
+        string monthlyMaxCreditsText = CommandCodeMonthlyMaxCreditsText.Trim();
+        double monthlyMaxCredits = 0;
+        if (monthlyMaxCreditsText.Length > 0 && (!double.TryParse(monthlyMaxCreditsText, out monthlyMaxCredits)
+            || !double.IsFinite(monthlyMaxCredits) || monthlyMaxCredits < 0)) {
+            ValidationMessage = "Command Code 월간 최대 크레딧은 0 이상의 숫자로 입력해주세요.";
+            return;
+        }
+        PendingAppSettings.CommandCodeMonthlyMaxCredits = monthlyMaxCredits;
 
         try {
             StartupManager.Apply(PendingAppSettings.RunAtStartup);

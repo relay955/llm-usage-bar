@@ -137,13 +137,17 @@
                                    Foreground="#777777" />
                     </Button>
                     <TextBlock Text="{Binding StatusMessage}"
+                               ToolTip="{Binding StatusToolTip}"
                                Margin="6,0,0,0"
                                FontSize="9"
                                FontWeight="SemiBold">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="#C0392B" />
+                                <Setter Property="Foreground" Value="#777777" />
                                 <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasStatusMessage}" Value="True">
+                                        <Setter Property="Foreground" Value="#C0392B" />
+                                    </DataTrigger>
                                     <DataTrigger Binding="{Binding IsRefreshing}" Value="True">
                                         <Setter Property="Foreground" Value="#ADAB37" />
                                     </DataTrigger>

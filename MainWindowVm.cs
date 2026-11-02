@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
 using System.Windows;
@@ -34,7 +35,7 @@ public class MainWindowVm:INotifyPropertyChanged {
     bool _refreshRequested;
     bool _refreshTimerEnabled;
     int _adaptiveRefreshIntervalMinutes = 1;
-    (string ProviderName, double? Short, double? Long, double? Balance)? _lastUsage;
+    (string ProviderName, double? Short, double? Long, double? Third, double? Balance)? _lastUsage;
 
     public ObservableCollection<ProviderListItem> AvailableProviders { get; } = new();
 
@@ -42,7 +43,18 @@ public class MainWindowVm:INotifyPropertyChanged {
     public string ProviderQuotaUrl { get; set; } = "";
     public string ErrorMessage { get; set; } = "";
     public bool IsRefreshing { get; set; }
-    public string StatusMessage => IsRefreshing ? "Refreshing.." : ErrorMessage;
+    public bool HasStatusMessage => IsRefreshing || !string.IsNullOrEmpty(ErrorMessage);
+    public string StatusMessage => IsRefreshing ? "Refreshing.." : !string.IsNullOrEmpty(ErrorMessage) ? ErrorMessage : ThirdQuotaStatusText;
+    public string StatusToolTip => HasStatusMessage ? StatusMessage : ThirdQuotaLabel;
+    public double? ThirdQuotaValue { get; set; }
+    public double? ThirdQuotaMax { get; set; }
+    public string ThirdQuotaLabel { get; set; } = "";
+    public string ThirdQuotaFormat { get; set; } = "{0:0.#}%";
+    public string ThirdQuotaStatusText => ThirdQuotaValue is double value
+        ? ThirdQuotaMax is > 0
+            ? string.Format(CultureInfo.InvariantCulture, "{0:0.#}%", Math.Clamp(value / ThirdQuotaMax.Value * 100, 0, 100))
+            : string.Format(CultureInfo.InvariantCulture, ThirdQuotaFormat, value)
+        : "";
     public string CreditText { get; set; } = "";
     public double MaxBalance { get; set; } = 0;
     public double BalanceRatio { get; set; } = 0;
@@ -161,8 +173,8 @@ public class MainWindowVm:INotifyPropertyChanged {
     /// <summary>
     /// 원본 사용량이 바뀌면 1분으로 되돌리고 같으면 최대 주기까지 간격을 두 배로 늘립니다.
     /// </summary>
-    void UpdateAdaptiveRefreshInterval(string providerName, double? shortUsage, double? longUsage, double? balance) {
-        var usage = (ProviderName: providerName, Short: shortUsage, Long: longUsage, Balance: balance);
+    void UpdateAdaptiveRefreshInterval(string providerName, double? shortUsage, double? longUsage, double? thirdUsage, double? balance) {
+        var usage = (ProviderName: providerName, Short: shortUsage, Long: longUsage, Third: thirdUsage, Balance: balance);
         this._adaptiveRefreshIntervalMinutes = this._lastUsage.HasValue && this._lastUsage.Value.Equals(usage)
             ? (int)Math.Min((long)this._adaptiveRefreshIntervalMinutes * 2, Math.Max(1, App.Settings.RefreshIntervalMinutes))
             : 1;
@@ -217,6 +229,10 @@ public class MainWindowVm:INotifyPropertyChanged {
                 var quota = await selectedProvider.GetCurrentQuotaAsync();
                 this._shortResetAt = selectedProvider.HasShortQuota ? quota.ShortResetAt : quota.LongResetAt;
                 this._longResetAt = selectedProvider.HasShortQuota && selectedProvider.HasLongQuota ? quota.LongResetAt : null;
+                ThirdQuotaValue = selectedProvider.HasThirdQuota ? quota.Third : null;
+                ThirdQuotaMax = selectedProvider.HasThirdQuota ? quota.ThirdMax : null;
+                ThirdQuotaLabel = selectedProvider.HasThirdQuota ? selectedProvider.ThirdQuotaLabel : "";
+                ThirdQuotaFormat = selectedProvider.ThirdQuotaFormat;
                 UpdateRemainingTimes();
                 if (selectedProvider.HasShortQuota && selectedProvider.HasLongQuota) {
                     ShortQuotaLabel = selectedProvider.ShortQuotaLabel;
@@ -238,14 +254,15 @@ public class MainWindowVm:INotifyPropertyChanged {
                 }
                 UpdateAdaptiveRefreshInterval(selectedProvider.Name,
                     selectedProvider.HasShortQuota ? quota.Short : null,
-                    selectedProvider.HasLongQuota ? quota.Long : null, null);
+                    selectedProvider.HasLongQuota ? quota.Long : null,
+                    selectedProvider.HasThirdQuota ? quota.Third : null, null);
             } else {
                 var balance = await selectedProvider.GetCurrentBalanceAsync(App.Settings);
                 this.MaxBalance = balance.Max;
                 this.BalanceRatio = balance.Max > 0 ? balance.Remain / balance.Max : 0;
                 CreditText = $"${balance.Remain:0.00}";
                 CurrentMode = balance.Max > 0 ? UiMode.Balance : UiMode.BalanceWithoutMax;
-                UpdateAdaptiveRefreshInterval(selectedProvider.Name, null, null, balance.Remain);
+                UpdateAdaptiveRefreshInterval(selectedProvider.Name, null, null, null, balance.Remain);
             }
         } catch(Exception e) {
             this._adaptiveRefreshIntervalMinutes = 1;
@@ -386,6 +403,10 @@ public class MainWindowVm:INotifyPropertyChanged {
         WeeklyQuotaRatio = 0;
         HourlyQuotaText = "";
         WeeklyQuotaText = "";
+        ThirdQuotaValue = null;
+        ThirdQuotaMax = null;
+        ThirdQuotaLabel = "";
+        ThirdQuotaFormat = "{0:0.#}%";
         this._shortResetAt = null;
         this._longResetAt = null;
         UpdateRemainingTimes();

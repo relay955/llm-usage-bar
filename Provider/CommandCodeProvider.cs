@@ -12,7 +12,7 @@ namespace LLMUsageBar.Provider;
 /// <summary>
 /// Command Code 요금제 할당량 프로바이더.
 /// ~/.commandcode/auth.json의 API 키로 billing credits API를 호출해
-/// 5시간/주간 잔여 할당량을 조회합니다.
+/// 5시간/주간 및 구독 월간 잔여 할당량을 조회합니다.
 /// </summary>
 public sealed class CommandCodeProvider(HttpClient? httpClient = null) : ILlmProvider {
     const string ApiKeyEnvironmentVariable = "COMMAND_CODE_API_KEY";
@@ -25,34 +25,21 @@ public sealed class CommandCodeProvider(HttpClient? httpClient = null) : ILlmPro
     public string QuotaUrl => "https://commandcode.ai/usage";
     public bool HasShortQuota => true;
     public bool HasLongQuota => true;
+    public bool HasThirdQuota => true;
     public string ShortQuotaLabel => "5h";
     public string LongQuotaLabel => "weekly";
+    public string ThirdQuotaLabel => "monthly";
+    public string ThirdQuotaFormat => "${0:0.00}";
     public bool HasBalance => false;
 
     /// <summary>
-    /// API 키로 credits API를 호출해 fiveHour/weekly 창의 잔여 사용률과 초기화 시각을 조회합니다.
+    /// 크레딧 API에서 잔여 사용량을 조회하고 설정의 월간 최대 크레딧을 적용합니다.
     /// </summary>
     public async Task<ILlmProvider.Quota> GetCurrentQuotaAsync() {
         string apiKey = ResolveApiKey(App.Settings.CommandCodeAuthJsonPath);
 
         try {
-            using HttpRequestMessage request = new(HttpMethod.Get, CreditsEndpoint);
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-            request.Headers.UserAgent.ParseAdd("LLMUsageBar/1.0");
-            request.Headers.Accept.ParseAdd("application/json");
-
-            using HttpResponseMessage response = await this._httpClient.SendAsync(request);
-            if (response.StatusCode == HttpStatusCode.Unauthorized) {
-                throw new InvalidOperationException("Command Code authentication failed - run login again");
-            }
-
-            if (!response.IsSuccessStatusCode) {
-                string errorText = await response.Content.ReadAsStringAsync();
-                throw new InvalidOperationException($"Command Code API error {(int)response.StatusCode}: {TrimError(errorText)}");
-            }
-
-            await using Stream responseStream = await response.Content.ReadAsStreamAsync();
-            var credits = await JsonSerializer.DeserializeAsync<CommandCodeCreditsResponse>(responseStream, JsonOptions);
+            var credits = await GetResponseAsync<CommandCodeCreditsResponse>(CreditsEndpoint, apiKey);
             CommandCodeLimitWindow? fiveHour = credits?.WindowLimits?.FiveHour;
             CommandCodeLimitWindow? weekly = credits?.WindowLimits?.Weekly;
             if (fiveHour is null || weekly is null) {
@@ -63,7 +50,9 @@ public sealed class CommandCodeProvider(HttpClient? httpClient = null) : ILlmPro
                 Short = RemainingPercent(fiveHour),
                 Long = RemainingPercent(weekly),
                 ShortResetAt = GetResetAt(fiveHour),
-                LongResetAt = GetResetAt(weekly)
+                LongResetAt = GetResetAt(weekly),
+                Third = credits?.Credits?.MonthlyCredits,
+                ThirdMax = App.Settings.CommandCodeMonthlyMaxCredits
             };
         }
         catch (Exception exception) when (exception is InvalidOperationException) {
@@ -72,6 +61,28 @@ public sealed class CommandCodeProvider(HttpClient? httpClient = null) : ILlmPro
         catch (Exception exception) when (exception is not OperationCanceledException) {
             throw new InvalidOperationException("Request failed", exception);
         }
+    }
+
+    /// <summary>
+    /// 인증 헤더를 포함해 API를 호출하고 공통 오류를 처리한 뒤 응답을 역직렬화합니다.
+    /// </summary>
+    async Task<T?> GetResponseAsync<T>(Uri endpoint, string apiKey) {
+        using HttpRequestMessage request = new(HttpMethod.Get, endpoint);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+        request.Headers.UserAgent.ParseAdd("LLMUsageBar/1.0");
+        request.Headers.Accept.ParseAdd("application/json");
+
+        using HttpResponseMessage response = await this._httpClient.SendAsync(request);
+        if (response.StatusCode == HttpStatusCode.Unauthorized) {
+            throw new InvalidOperationException("Command Code authentication failed - run login again");
+        }
+        if (!response.IsSuccessStatusCode) {
+            string errorText = await response.Content.ReadAsStringAsync();
+            throw new InvalidOperationException($"Command Code API error {(int)response.StatusCode}: {TrimError(errorText)}");
+        }
+
+        await using Stream responseStream = await response.Content.ReadAsStreamAsync();
+        return await JsonSerializer.DeserializeAsync<T>(responseStream, JsonOptions);
     }
 
     /// <summary>
@@ -162,8 +173,16 @@ public sealed class CommandCodeProvider(HttpClient? httpClient = null) : ILlmPro
     public sealed class CommandCodeQuota : ILlmProvider.Quota;
 
     sealed class CommandCodeCreditsResponse {
+        [JsonPropertyName("credits")]
+        public CommandCodeCreditBalance? Credits { get; init; }
+
         [JsonPropertyName("windowLimits")]
         public CommandCodeWindowLimits? WindowLimits { get; init; }
+    }
+
+    sealed class CommandCodeCreditBalance {
+        [JsonPropertyName("monthlyCredits")]
+        public double? MonthlyCredits { get; init; }
     }
 
     sealed class CommandCodeWindowLimits {

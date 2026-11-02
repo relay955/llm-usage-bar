@@ -31,6 +31,7 @@ public sealed class AppSettings:INotifyPropertyChanged {
     public string OllamaCloudSessionCookie { get; set; } = "";
     public bool UseCommandCode { get; set; }
     public string CommandCodeAuthJsonPath { get; set; } = AppSettingsStore.DefaultCommandCodeAuthJsonPath;
+    public double CommandCodeMonthlyMaxCredits { get; set; }
     public string SelectedProviderName { get; set; } = "";
     public double? WindowLeft { get; set; }
     public double? WindowTop { get; set; }
@@ -60,6 +61,7 @@ public static class AppSettingsStore {
     private const string OllamaCloudSessionCookieKey = "session_cookie";
     private const string UseCommandCodeKey = "useCommandCode";
     private const string CommandCodeAuthJsonPathKey = "CommandCodeAuthJsonPath";
+    const string CommandCodeMonthlyMaxCreditsKey = "CommandCodeMonthlyMaxCredits";
     private const string SelectedProviderNameKey = "selected_provider_name";
     private const string WindowLeftKey = "window_left";
     private const string WindowTopKey = "window_top";
@@ -107,6 +109,7 @@ public static class AppSettingsStore {
             OllamaCloudSessionCookie = ReadString(table, OllamaCloudSessionCookieKey, ""),
             UseCommandCode = ReadBool(table, UseCommandCodeKey, false),
             CommandCodeAuthJsonPath = ReadString(table, CommandCodeAuthJsonPathKey, DefaultCommandCodeAuthJsonPath),
+            CommandCodeMonthlyMaxCredits = ReadDouble(table, CommandCodeMonthlyMaxCreditsKey, 0),
             SelectedProviderName = ReadString(table, SelectedProviderNameKey, ""),
             WindowLeft = ReadNullableDouble(table, WindowLeftKey),
             WindowTop = ReadNullableDouble(table, WindowTopKey)
@@ -138,6 +141,7 @@ public static class AppSettingsStore {
             [OllamaCloudSessionCookieKey] = settings.OllamaCloudSessionCookie,
             [UseCommandCodeKey] = settings.UseCommandCode,
             [CommandCodeAuthJsonPathKey] = settings.CommandCodeAuthJsonPath,
+            [CommandCodeMonthlyMaxCreditsKey] = settings.CommandCodeMonthlyMaxCredits,
             [SelectedProviderNameKey] = settings.SelectedProviderName
         };
 

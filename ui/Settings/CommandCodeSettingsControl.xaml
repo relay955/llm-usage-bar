@@ -4,10 +4,12 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
-             d:DesignHeight="160"
+             d:DesignHeight="240"
              d:DesignWidth="520">
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -47,9 +49,33 @@
                  Text="{Binding PendingAppSettings.CommandCodeAuthJsonPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
         <TextBlock Grid.Row="2"
+                   Grid.Column="0"
+                   Margin="0,16,0,0"
+                   Text="월간 최대 크레딧 ($)"
+                   Foreground="#FFE8E8E8"
+                   FontSize="13"
+                   VerticalAlignment="Center" />
+
+        <TextBox Grid.Row="2"
+                 Grid.Column="1"
+                 Margin="0,16,0,0"
+                 Height="30"
+                 VerticalContentAlignment="Center"
+                 Padding="8,0"
+                 Text="{Binding CommandCodeMonthlyMaxCreditsText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+        <TextBlock Grid.Row="3"
+                   Grid.ColumnSpan="2"
+                   Margin="0,8,0,0"
+                   Text="월간 최대 크레딧을 입력하면 잔여량을 퍼센트로 표시합니다. 비워두거나 0을 입력하면 남은 금액을 표시합니다."
+                   Foreground="#FF9CA3AF"
+                   FontSize="12"
+                   TextWrapping="Wrap" />
+
+        <TextBlock Grid.Row="4"
                    Grid.ColumnSpan="2"
                    Margin="0,16,0,0"
-                   Text="auth.json의 API 키로 5시간/주간 할당량을 조회합니다. COMMAND_CODE_API_KEY 환경 변수가 있으면 우선 사용합니다."
+                   Text="auth.json의 API 키로 5시간/주간 할당량과 월간 잔여 크레딧을 조회합니다. COMMAND_CODE_API_KEY 환경 변수가 있으면 우선 사용합니다."
                    Foreground="#FF9CA3AF"
                    FontSize="12"
                    TextWrapping="Wrap" />
