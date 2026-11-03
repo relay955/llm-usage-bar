@@ -13,7 +13,7 @@ public sealed class AppSettings:INotifyPropertyChanged {
     public int RefreshIntervalMinutes { get; set; } = 60;
     public bool UseAdaptiveRefresh { get; set; } = true;
     public bool RunAtStartup { get; set; }
-    public bool HideOnFullscreen { get; set; }
+    public bool HideOnFullscreen { get; set; } = true;
     public bool UseCodex { get; set; }
     public string CodexAuthJsonPath { get; set; } = AppSettingsStore.DefaultCodexAuthJsonPath;
     public bool UseAntigravityClaude { get; set; }
@@ -93,7 +93,7 @@ public static class AppSettingsStore {
             RefreshIntervalMinutes = ReadPositiveInt(table, RefreshIntervalKey, 60),
             UseAdaptiveRefresh = ReadBool(table, UseAdaptiveRefreshKey, true),
             RunAtStartup = ReadBool(table, RunAtStartupKey, false),
-            HideOnFullscreen = ReadBool(table, HideOnFullscreenKey, false),
+            HideOnFullscreen = ReadBool(table, HideOnFullscreenKey, true),
             UseCodex = ReadBool(table, UseCodexKey, false),
             CodexAuthJsonPath = ReadString(table, CodexAuthJsonPathKey, DefaultCodexAuthJsonPath),
             UseAntigravityClaude = ReadBool(table, UseAntigravityClaudeKey, ReadBool(table, UseAntigravityKey, false)),
