@@ -12,6 +12,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -62,5 +63,13 @@
                   Foreground="#FFE8E8E8"
                   FontSize="13"
                   IsChecked="{Binding PendingAppSettings.RunAtStartup, Mode=TwoWay}" />
+
+        <CheckBox Grid.Row="4"
+                  Grid.ColumnSpan="3"
+                  Margin="0,20,0,0"
+                  Content="전체화면 창이 있을 때 숨기기"
+                  Foreground="#FFE8E8E8"
+                  FontSize="13"
+                  IsChecked="{Binding PendingAppSettings.HideOnFullscreen, Mode=TwoWay}" />
     </Grid>
 </UserControl>

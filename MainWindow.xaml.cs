@@ -113,7 +113,7 @@ public partial class MainWindow : Window {
     }
 
     void TopmostTimer_Tick(object? sender, EventArgs e) {
-        if (IsFullscreenWindowOnOwnMonitor()) {
+        if (App.Settings.HideOnFullscreen && IsFullscreenWindowOnOwnMonitor()) {
             ProviderPicker.Close();
             Hide();
             return;

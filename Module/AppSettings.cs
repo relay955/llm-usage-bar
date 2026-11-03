@@ -13,6 +13,7 @@ public sealed class AppSettings:INotifyPropertyChanged {
     public int RefreshIntervalMinutes { get; set; } = 60;
     public bool UseAdaptiveRefresh { get; set; } = true;
     public bool RunAtStartup { get; set; }
+    public bool HideOnFullscreen { get; set; }
     public bool UseCodex { get; set; }
     public string CodexAuthJsonPath { get; set; } = AppSettingsStore.DefaultCodexAuthJsonPath;
     public bool UseAntigravityClaude { get; set; }
@@ -42,6 +43,7 @@ public static class AppSettingsStore {
     private const string RefreshIntervalKey = "refresh_interval_minutes";
     const string UseAdaptiveRefreshKey = "use_adaptive_refresh";
     private const string RunAtStartupKey = "run_at_startup";
+    private const string HideOnFullscreenKey = "hide_on_fullscreen";
     private const string UseCodexKey = "useCodex";
     private const string CodexAuthJsonPathKey = "CodexAuthJsonPath";
     private const string UseAntigravityKey = "useAntigravity";
@@ -91,6 +93,7 @@ public static class AppSettingsStore {
             RefreshIntervalMinutes = ReadPositiveInt(table, RefreshIntervalKey, 60),
             UseAdaptiveRefresh = ReadBool(table, UseAdaptiveRefreshKey, true),
             RunAtStartup = ReadBool(table, RunAtStartupKey, false),
+            HideOnFullscreen = ReadBool(table, HideOnFullscreenKey, false),
             UseCodex = ReadBool(table, UseCodexKey, false),
             CodexAuthJsonPath = ReadString(table, CodexAuthJsonPathKey, DefaultCodexAuthJsonPath),
             UseAntigravityClaude = ReadBool(table, UseAntigravityClaudeKey, ReadBool(table, UseAntigravityKey, false)),
@@ -123,6 +126,7 @@ public static class AppSettingsStore {
             [RefreshIntervalKey] = Math.Max(1, settings.RefreshIntervalMinutes),
             [UseAdaptiveRefreshKey] = settings.UseAdaptiveRefresh,
             [RunAtStartupKey] = settings.RunAtStartup,
+            [HideOnFullscreenKey] = settings.HideOnFullscreen,
             [UseCodexKey] = settings.UseCodex,
             [CodexAuthJsonPathKey] = settings.CodexAuthJsonPath,
             [UseAntigravityClaudeKey] = settings.UseAntigravityClaude,
