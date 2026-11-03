@@ -7,3 +7,4 @@ riderModule.iml
 AGENTS.md
 FodyWeavers.xsd
 .commandcode/
+*.ps1
