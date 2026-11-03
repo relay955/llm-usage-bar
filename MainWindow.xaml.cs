@@ -113,7 +113,7 @@ public partial class MainWindow : Window {
     }
 
     void TopmostTimer_Tick(object? sender, EventArgs e) {
-        if (App.Settings.HideOnFullscreen && IsFullscreenWindowOnOwnMonitor()) {
+        if (App.Settings.HideOnFullscreen && IsForegroundWindowFullscreenOnOwnMonitor()) {
             ProviderPicker.Close();
             Hide();
             return;
@@ -126,43 +126,36 @@ public partial class MainWindow : Window {
         Topmost = true;
     }
 
-    bool IsFullscreenWindowOnOwnMonitor() {
+    bool IsForegroundWindowFullscreenOnOwnMonitor() {
         nint ownWindow = new WindowInteropHelper(this).Handle;
+        nint window = GetForegroundWindow();
+        if (window == 0 || window == ownWindow || !IsWindowVisible(window) || IsIconic(window)) return false;
+
+        StringBuilder className = new(256);
+        GetClassName(window, className, className.Capacity);
+        if (className.ToString() is "Progman" or "WorkerW") return false;
+
+        if (DwmGetWindowAttribute(window, DwmwaCloaked, out int cloaked, sizeof(int)) == 0 && cloaked != 0)
+            return false;
+
         nint ownMonitor = MonitorFromWindow(ownWindow, MonitorDefaultToNearest);
         if (ownMonitor == 0) return false;
         MonitorInfo monitorInfo = new() { Size = Marshal.SizeOf<MonitorInfo>() };
         if (!GetMonitorInfo(ownMonitor, ref monitorInfo)) return false;
 
-        bool fullscreenFound = false;
-        EnumWindows((window, _) => {
-            if (window == ownWindow || !IsWindowVisible(window) || IsIconic(window)) return true;
+        if (!GetWindowRect(window, out NativeRect windowRect)) return false;
 
-            StringBuilder className = new(256);
-            GetClassName(window, className, className.Capacity);
-            if (className.ToString() is "Progman" or "WorkerW") return true;
-
-            if (DwmGetWindowAttribute(window, DwmwaCloaked, out int cloaked, sizeof(int)) == 0 && cloaked != 0)
-                return true;
-
-            if (!GetWindowRect(window, out NativeRect windowRect)) return true;
-
-            const int tolerance = 2;
-            fullscreenFound = windowRect.Left <= monitorInfo.Monitor.Left + tolerance &&
-                              windowRect.Top <= monitorInfo.Monitor.Top + tolerance &&
-                              windowRect.Right >= monitorInfo.Monitor.Right - tolerance &&
-                              windowRect.Bottom >= monitorInfo.Monitor.Bottom - tolerance;
-            return !fullscreenFound;
-        }, 0);
-        return fullscreenFound;
+        const int tolerance = 2;
+        return windowRect.Left <= monitorInfo.Monitor.Left + tolerance &&
+               windowRect.Top <= monitorInfo.Monitor.Top + tolerance &&
+               windowRect.Right >= monitorInfo.Monitor.Right - tolerance &&
+               windowRect.Bottom >= monitorInfo.Monitor.Bottom - tolerance;
     }
 
     const int DwmwaCloaked = 14;
 
     [DllImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    static extern bool EnumWindows(EnumWindowsProc callback, nint lParam);
-
-    delegate bool EnumWindowsProc(nint window, nint lParam);
+    static extern nint GetForegroundWindow();
 
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
