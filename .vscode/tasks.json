@@ -15,6 +15,16 @@
         },
         {
             "label": "publish",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "publish-build",
+                "publish-desktop"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "publish-build",
+            "hide": true,
             "command": "dotnet",
             "type": "process",
             "args": [
@@ -24,12 +34,32 @@
                 "Release",
                 "--self-contained",
                 "false",
+                "--output",
+                "${workspaceFolder}/bin/publish",
                 "/property:PublishSingleFile=true",
                 "/property:IncludeNativeLibrariesForSelfExtract=true",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "publish-desktop",
+            "hide": true,
+            "command": "powershell.exe",
+            "type": "process",
+            "args": [
+                "-NoProfile",
+                "-NonInteractive",
+                "-Command",
+                "$ErrorActionPreference = 'Stop'; $sourcePath = $env:LLMUSAGEBAR_PUBLISH_EXE; if (-not (Test-Path -LiteralPath $sourcePath -PathType Leaf)) { throw 'Published EXE not found.' }; $desktopPath = [Environment]::GetFolderPath('DesktopDirectory'); if ([string]::IsNullOrWhiteSpace($desktopPath) -or -not (Test-Path -LiteralPath $desktopPath -PathType Container)) { throw 'Desktop directory not found.' }; Move-Item -LiteralPath $sourcePath -Destination ([IO.Path]::Combine($desktopPath, 'LLMUsageBar.exe')) -Force"
+            ],
+            "options": {
+                "env": {
+                    "LLMUSAGEBAR_PUBLISH_EXE": "${workspaceFolder}/bin/publish/LLMUsageBar.exe"
+                }
+            },
+            "problemMatcher": []
         },
         {
             "label": "watch",
