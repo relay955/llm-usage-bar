@@ -22,7 +22,7 @@ public sealed class ClaudeProvider(HttpClient? httpClient = null) : ILlmProvider
     public string QuotaUrl => "https://claude.ai/settings/usage";
     public bool HasShortQuota => true;
     public bool HasLongQuota => true;
-    public string ShortQuotaLabel => "5h";
+    public string ShortQuotaLabel => "hourly";
     public string LongQuotaLabel => "weekly";
     public bool HasBalance => false;
 

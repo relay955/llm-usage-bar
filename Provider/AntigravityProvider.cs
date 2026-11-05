@@ -42,7 +42,7 @@ public sealed partial class AntigravityProvider(AntigravityModelGroup modelGroup
     public string QuotaUrl => "https://antigravity.google/settings";
     public bool HasShortQuota => modelGroup != AntigravityModelGroup.GeminiFrontier;
     public bool HasLongQuota => true;
-    public string ShortQuotaLabel => "5h";
+    public string ShortQuotaLabel => "hourly";
     public string LongQuotaLabel => "weekly";
     public bool HasBalance => false;
 

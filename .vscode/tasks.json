@@ -20,6 +20,12 @@
             "args": [
                 "publish",
                 "${workspaceFolder}/LLMUsageBar.csproj",
+                "--configuration",
+                "Release",
+                "--self-contained",
+                "false",
+                "/property:PublishSingleFile=true",
+                "/property:IncludeNativeLibrariesForSelfExtract=true",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
