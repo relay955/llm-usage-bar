@@ -351,6 +351,7 @@ public class MainWindowVm:INotifyPropertyChanged {
         if (App.Settings.UseNanoGpt) this._providerList.Add(new NanoGptProvider());
         if (App.Settings.UseChutes) this._providerList.Add(new ChutesProvider());
         if (App.Settings.UseCodex) this._providerList.Add(new CodexProvider());
+        if (App.Settings.UseClaude) this._providerList.Add(new ClaudeProvider());
         if (App.Settings.UseAntigravityClaude) this._providerList.Add(new AntigravityProvider(AntigravityModelGroup.ClaudeGpt));
         if (App.Settings.UseAntigravityGemini) this._providerList.Add(new AntigravityProvider(AntigravityModelGroup.Gemini));
         if (App.Settings.UseAntigravityFrontier) this._providerList.Add(new AntigravityProvider(AntigravityModelGroup.GeminiFrontier));

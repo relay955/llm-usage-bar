@@ -171,6 +171,13 @@
                         </Setter.Value>
                     </Setter>
                 </DataTrigger>
+                <DataTrigger Binding="{Binding SelectedTabIndex}" Value="8">
+                    <Setter Property="Content">
+                        <Setter.Value>
+                            <local:ClaudeSettingsControl />
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
             </Style.Triggers>
         </Style>
     </Window.Resources>
@@ -241,6 +248,7 @@
                 <ListBoxItem Content="Ollama Cloud" />
                 <ListBoxItem Content="Antigravity" />
                 <ListBoxItem Content="Command Code" />
+                <ListBoxItem Content="Claude" />
             </ListBox>
         </Border>
 

@@ -16,6 +16,8 @@ public sealed class AppSettings:INotifyPropertyChanged {
     public bool HideOnFullscreen { get; set; } = true;
     public bool UseCodex { get; set; }
     public string CodexAuthJsonPath { get; set; } = AppSettingsStore.DefaultCodexAuthJsonPath;
+    public bool UseClaude { get; set; }
+    public string ClaudeDesktopDataDirectory { get; set; } = "";
     public bool UseAntigravityClaude { get; set; }
     public bool UseAntigravityGemini { get; set; }
     public bool UseAntigravityFrontier { get; set; }
@@ -46,6 +48,8 @@ public static class AppSettingsStore {
     private const string HideOnFullscreenKey = "hide_on_fullscreen";
     private const string UseCodexKey = "useCodex";
     private const string CodexAuthJsonPathKey = "CodexAuthJsonPath";
+    const string UseClaudeKey = "useClaude";
+    const string ClaudeDesktopDataDirectoryKey = "ClaudeDesktopDataDirectory";
     private const string UseAntigravityKey = "useAntigravity";
     const string UseAntigravityClaudeKey = "useAntigravityClaude";
     const string UseAntigravityGeminiKey = "useAntigravityGemini";
@@ -96,6 +100,8 @@ public static class AppSettingsStore {
             HideOnFullscreen = ReadBool(table, HideOnFullscreenKey, true),
             UseCodex = ReadBool(table, UseCodexKey, false),
             CodexAuthJsonPath = ReadString(table, CodexAuthJsonPathKey, DefaultCodexAuthJsonPath),
+            UseClaude = ReadBool(table, UseClaudeKey, false),
+            ClaudeDesktopDataDirectory = ReadString(table, ClaudeDesktopDataDirectoryKey, ""),
             UseAntigravityClaude = ReadBool(table, UseAntigravityClaudeKey, ReadBool(table, UseAntigravityKey, false)),
             UseAntigravityGemini = ReadBool(table, UseAntigravityGeminiKey, ReadBool(table, UseAntigravityKey, false)),
             UseAntigravityFrontier = ReadBool(table, UseAntigravityFrontierKey, ReadBool(table, UseAntigravityKey, false)),
@@ -129,6 +135,8 @@ public static class AppSettingsStore {
             [HideOnFullscreenKey] = settings.HideOnFullscreen,
             [UseCodexKey] = settings.UseCodex,
             [CodexAuthJsonPathKey] = settings.CodexAuthJsonPath,
+            [UseClaudeKey] = settings.UseClaude,
+            [ClaudeDesktopDataDirectoryKey] = settings.ClaudeDesktopDataDirectory,
             [UseAntigravityClaudeKey] = settings.UseAntigravityClaude,
             [UseAntigravityGeminiKey] = settings.UseAntigravityGemini,
             [UseAntigravityFrontierKey] = settings.UseAntigravityFrontier,
